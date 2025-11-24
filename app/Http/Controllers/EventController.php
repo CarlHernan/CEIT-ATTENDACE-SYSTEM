@@ -103,12 +103,14 @@ class EventController extends Controller
             : Society::pluck('id')->toArray();
         $fallbackSocietyId = $societyIds[0] ?? null;
 
-        // LSG events are CEIT-wide; auto-assign society_id and flags
+        // LSG can create either CEIT-wide or LSG-only (meeting) events; keep society_id fixed but don't force CEIT-wide for meetings.
         if ($role === 'lsg_officer') {
+            $incomingType = $request->input('type', 'lsg');
+            $normalizedType = $incomingType === 'ceit' ? 'ceit' : 'lsg';
             $request->merge([
                 'society_id' => $fallbackSocietyId,
-                'is_ceit_wide' => true,
-                'type' => 'ceit',
+                'type' => $normalizedType,
+                'is_ceit_wide' => $normalizedType === 'ceit' ? true : $request->boolean('is_ceit_wide', false),
             ]);
         }
 

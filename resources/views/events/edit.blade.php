@@ -138,14 +138,16 @@
 
                     <div class="flex justify-between items-center">
                         <x-primary-button>{{ __('Update Event') }}</x-primary-button>
-
-                        <form method="POST" action="{{ route('events.cancel', $event) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="text-sm text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('Cancel this event?')">Cancel event</button>
-                        </form>
                     </div>
                 </form>
+
+                <div class="mt-4 flex justify-end">
+                    <form method="POST" action="{{ route('events.cancel', $event) }}">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="text-sm text-red-600 hover:text-red-700 font-semibold" onclick="return confirm('Cancel this event?')">Cancel event</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -28,8 +28,15 @@
                 @forelse ($events as $event)
                     <a href="{{ route('events.show', $event) }}" class="card p-5 block hover:shadow-md transition">
                         <div class="flex items-start justify-between gap-4">
+                            @php
+                                $scopeLabel = match ($event->type) {
+                                    'ceit' => 'CEIT',
+                                    'lsg' => 'LSG',
+                                    default => $event->society->abbreviation ?? 'N/A',
+                                };
+                            @endphp
                             <div>
-                                <p class="text-xs font-semibold text-blue-700 uppercase">{{ $event->society->abbreviation }}</p>
+                                <p class="text-xs font-semibold text-blue-700 uppercase">{{ $scopeLabel }}</p>
                                 <h3 class="text-lg font-semibold text-blue-950">{{ $event->title }}</h3>
                                 <p class="text-sm text-slate-600 mt-1 line-clamp-2">{{ $event->description }}</p>
                                 <div class="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
