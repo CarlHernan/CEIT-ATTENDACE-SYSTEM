@@ -21,6 +21,7 @@ class Event extends Model
         'attendance_mode',
         'audience',
         'audience_notes',
+        'late_threshold_minutes',
         'status',
         'society_id',
         'created_by',

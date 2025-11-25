@@ -40,6 +40,20 @@ new class extends Component
         $this->societies = Society::orderBy('abbreviation')->get();
     }
 
+    public function updatedSocietyId($value): void
+    {
+        // Reset dependent course when society changes so options refresh cleanly.
+        $this->course = '';
+    }
+
+    public function getCourseOptionsProperty(): array
+    {
+        $society = $this->society_id ? Society::find($this->society_id) : null;
+        $slug = $society?->slug;
+
+        return $slug ? ($this->coursesBySociety[$slug] ?? []) : [];
+    }
+
     /**
      * Update the profile information for the currently authenticated user.
      */
@@ -152,7 +166,7 @@ new class extends Component
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <x-input-label for="society_id" :value="__('Society')" />
-                <select wire:model="society_id" id="society_id" name="society_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-700 focus:ring-blue-700">
+                <select wire:model.live="society_id" wire:change="$set('course', '')" id="society_id" name="society_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-700 focus:ring-blue-700">
                     <option value="">{{ __('Select your society') }}</option>
                     @foreach ($societies as $society)
                         <option value="{{ $society->id }}">{{ $society->abbreviation }}</option>
@@ -168,19 +182,12 @@ new class extends Component
             </div>
         </div>
 
-        @php
-            $societyCollection = collect($societies);
-            $selectedSociety = $societyCollection->firstWhere('id', (int) $society_id);
-            $societySlug = $selectedSociety->slug ?? null;
-            $courseOptions = $societySlug ? ($coursesBySociety[$societySlug] ?? []) : [];
-        @endphp
-
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
                 <x-input-label for="course" :value="__('Course')" />
-                <select wire:model="course" id="course" name="course" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-700 focus:ring-blue-700" @disabled(!$society_id)>
+                <select wire:model="course" id="course" name="course" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-700 focus:ring-blue-700" @disabled(!$society_id) wire:key="course-{{ $society_id ?? 'none' }}">
                     <option value="">{{ $society_id ? 'Select course' : 'Select society first' }}</option>
-                    @foreach ($courseOptions as $option)
+                    @foreach ($this->courseOptions as $option)
                         <option value="{{ $option }}">{{ $option }}</option>
                     @endforeach
                 </select>

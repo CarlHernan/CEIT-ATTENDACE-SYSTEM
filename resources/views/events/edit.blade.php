@@ -51,23 +51,17 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <x-input-label for="attendance_mode" :value="__('Attendance Mode')" />
-                            <select id="attendance_mode" name="attendance_mode" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
-                                @foreach (['qr' => 'QR scanning', 'manual' => 'Manual ID', 'hybrid' => 'Hybrid'] as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('attendance_mode', $event->attendance_mode ?? 'hybrid') === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('attendance_mode')" class="mt-2" />
-                        </div>
-
-                        <div>
                             <x-input-label for="society_id" :value="__('Society')" />
                             @if ($role === 'lsg_officer' || $event->society_id === null)
                                 <input type="hidden" name="society_id" value="">
-                                <x-text-input id="society_readonly" type="text" class="mt-1 block w-full" value="CEIT-LSG event" readonly />
+                                <x-text-input id="society_readonly" type="text" class="mt-1 block w-full" value="{{ old('society_readonly', 'CEIT-LSG event') }}" readonly />
                             @elseif ($role === 'officer')
-                                <input type="hidden" name="society_id" value="{{ old('society_id', $event->society_id ?? $defaultSocietyId) }}">
-                                <div class="mt-1 text-sm text-slate-700">{{ $societies->first()?->abbreviation }}</div>
+                                @php
+                                    $selectedSocietyId = old('society_id', $event->society_id ?? $defaultSocietyId);
+                                    $selectedSociety = $societies->firstWhere('id', $selectedSocietyId) ?? $societies->first();
+                                @endphp
+                                <input type="hidden" name="society_id" value="{{ $selectedSocietyId }}">
+                                <x-text-input id="society_readonly" type="text" class="mt-1 block w-full" value="{{ $selectedSociety?->abbreviation }}" readonly />
                                 <x-input-error :messages="$errors->get('society_id')" class="mt-2" />
                             @else
                                 <select id="society_id" name="society_id" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
@@ -78,6 +72,25 @@
                                 <x-input-error :messages="$errors->get('society_id')" class="mt-2" />
                             @endif
                         </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <x-input-label for="attendance_mode" :value="__('Attendance Mode')" />
+                                <select id="attendance_mode" name="attendance_mode" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
+                                    @foreach (['qr' => 'QR scanning', 'manual' => 'Manual ID', 'hybrid' => 'Hybrid'] as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('attendance_mode', $event->attendance_mode ?? 'hybrid') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('attendance_mode')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="late_threshold_minutes" :value="__('Late threshold (minutes)')" />
+                                <x-text-input id="late_threshold_minutes" name="late_threshold_minutes" type="number" min="0" max="720" class="mt-1 block w-full" value="{{ old('late_threshold_minutes', $event->late_threshold_minutes ?? 5) }}" />
+                                <x-input-error :messages="$errors->get('late_threshold_minutes')" class="mt-2" />
+                            </div>
+                        </div>
+                        
+
+                        
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

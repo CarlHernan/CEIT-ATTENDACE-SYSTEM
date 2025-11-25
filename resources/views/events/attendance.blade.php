@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
-                <p class="text-xs font-semibold uppercase text-blue-800">{{ $event->society->abbreviation }}</p>
+                <p class="text-xs font-semibold uppercase text-blue-800">{{ $event->society->abbreviation ?? 'CEIT-LSG' }}</p>
                 <h2 class="font-semibold text-xl text-blue-950 leading-tight">
                     {{ __('Attendance for ') . $event->title }}
                 </h2>
@@ -31,7 +31,7 @@
                         </div>
                         <div class="card p-3 bg-white shadow-sm">
                             <p class="text-xs font-semibold text-blue-900 uppercase">Society</p>
-                            <p class="text-xl font-semibold text-blue-950">{{ $event->society->abbreviation }}</p>
+                            <p class="text-xl font-semibold text-blue-950">{{ $event->society->abbreviation ?? 'CEIT-LSG' }}</p>
                         </div>
                     </div>
 

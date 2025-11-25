@@ -2,24 +2,25 @@
 
 namespace App\Exports;
 
-use App\Models\AttendanceRecord;
 use App\Models\Event;
-use App\Support\AttendanceStatus;
+use App\Models\User;
 use Illuminate\Contracts\Support\Responsable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class EventAttendanceExport implements FromCollection, WithHeadings, WithMapping, Responsable
+class EventAbsentExport implements FromCollection, WithHeadings, WithMapping, Responsable
 {
-    public $fileName = 'attendance.xlsx';
+    public $fileName = 'absent.xlsx';
 
     protected Event $event;
     protected array $filters;
+    protected array $expectedUserIds;
 
-    public function __construct(Event $event, array $filters = [], string $fileName = null)
+    public function __construct(Event $event, array $expectedUserIds, array $filters = [], string $fileName = null)
     {
         $this->event = $event;
+        $this->expectedUserIds = $expectedUserIds;
         $this->filters = $filters;
         if ($fileName) {
             $this->fileName = $fileName;
@@ -28,8 +29,11 @@ class EventAttendanceExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        return AttendanceRecord::with(['user.societies'])
-            ->where('event_id', $this->event->id)
+        $attendedIds = $this->event->attendanceRecords()->pluck('user_id')->all();
+        $absentIds = array_values(array_diff($this->expectedUserIds, $attendedIds));
+
+        return User::with('societies')
+            ->whereIn('id', $absentIds)
             ->tap(fn ($q) => $this->applyFilters($q))
             ->get();
     }
@@ -45,28 +49,21 @@ class EventAttendanceExport implements FromCollection, WithHeadings, WithMapping
             'Society',
             'Department',
             'Position',
-            'Time In',
-            'Time Out',
-            'Status',
         ];
     }
 
-    public function map($record): array
+    public function map($user): array
     {
-        $user = $record->user;
-        $society = $user?->societies?->first();
+        $society = $user->societies->first();
         return [
-            $user?->id_number,
-            $user?->name,
-            $user?->year_level,
-            $user?->course,
-            $user?->section,
+            $user->id_number,
+            $user->name,
+            $user->year_level,
+            $user->course,
+            $user->section,
             $society?->abbreviation,
-            $user?->department ?? 'CEIT',
+            $user->department ?? 'CEIT',
             $society?->pivot?->position,
-            optional($record->time_in)->format('Y-m-d H:i:s'),
-            optional($record->time_out)->format('Y-m-d H:i:s'),
-            AttendanceStatus::for($record, $this->event),
         ];
     }
 
@@ -74,23 +71,23 @@ class EventAttendanceExport implements FromCollection, WithHeadings, WithMapping
     {
         if ($courses = $this->filters['course'] ?? null) {
             $courses = is_array($courses) ? $courses : [$courses];
-            $query->whereHas('user', fn ($u) => $u->whereIn('course', $courses));
+            $query->whereIn('course', $courses);
         }
 
         if ($section = $this->filters['section'] ?? null) {
-            $query->whereHas('user', fn ($u) => $u->where('section', $section));
+            $query->where('section', $section);
         }
 
         if ($year = $this->filters['year_level'] ?? null) {
-            $query->whereHas('user', fn ($u) => $u->where('year_level', $year));
+            $query->where('year_level', $year);
         }
 
         if ($position = $this->filters['position'] ?? null) {
-            $query->whereHas('user.societies', fn ($s) => $s->where('position', $position));
+            $query->whereHas('societies', fn ($s) => $s->where('position', $position));
         }
 
         if ($societyId = $this->filters['society'] ?? null) {
-            $query->whereHas('user.societies', fn ($s) => $s->where('society_id', $societyId));
+            $query->whereHas('societies', fn ($s) => $s->where('society_id', $societyId));
         }
     }
 }

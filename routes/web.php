@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\OfficerDashboardController;
+use App\Http\Controllers\LsgDashboardController;
+use App\Http\Controllers\EventReportController;
+use App\Http\Controllers\LsgAnalyticsController;
 
 Route::get('/', function () {
     $user = auth()->user();
@@ -24,8 +28,8 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/student', StudentDashboardController::class)->name('student.dashboard');
-    Route::view('dashboard/officer', 'dashboards.officer')->name('officer.dashboard');
-    Route::view('dashboard/lsg', 'dashboards.lsg')->name('lsg.dashboard');
+    Route::get('dashboard/officer', OfficerDashboardController::class)->name('officer.dashboard');
+    Route::get('dashboard/lsg', LsgDashboardController::class)->name('lsg.dashboard');
     Route::view('dashboard/admin', 'dashboards.admin')->name('admin.dashboard');
 
     Route::view('profile', 'profile')->name('profile');
@@ -41,6 +45,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('events/{event}/attendance', [AttendanceController::class, 'show'])->name('events.attendance');
         Route::get('events/{event}/attendance/export', [AttendanceController::class, 'export'])->name('events.attendance.export')->middleware('role:officer,admin');
         Route::post('events/{event}/attendance', [AttendanceController::class, 'record'])->name('events.attendance.record')->middleware('role:officer,admin');
+
+        // Reporting (society officer)
+        Route::get('events/{event}/report', [EventReportController::class, 'show'])->name('events.report')->middleware('role:officer');
+        Route::get('events/{event}/report/export', [EventReportController::class, 'export'])->name('events.report.export')->middleware('role:officer');
+        Route::get('events/{event}/report/export-absent', [EventReportController::class, 'exportAbsent'])->name('events.report.export-absent')->middleware('role:officer');
+
+        // CEIT-LSG analytics
+        Route::get('lsg/events/{event}/analytics', [LsgAnalyticsController::class, 'show'])->name('lsg.analytics')->middleware('role:lsg_officer');
+        Route::get('lsg/events/{event}/analytics/export', [LsgAnalyticsController::class, 'export'])->name('lsg.analytics.export')->middleware('role:lsg_officer');
+        Route::get('lsg/events/{event}/analytics/export-absent', [LsgAnalyticsController::class, 'exportAbsent'])->name('lsg.analytics.export-absent')->middleware('role:lsg_officer');
     });
 
     Route::get('events/upcoming', [EventController::class, 'index'])->name('events.upcoming'); // student view filtered by visibility

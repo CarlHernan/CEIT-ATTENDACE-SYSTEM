@@ -85,6 +85,7 @@ class EventController extends Controller
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],
+            'late_threshold_minutes' => ['nullable', 'integer', 'min:0', 'max:720'],
             'society_id' => $role === 'lsg_officer'
                 ? ['nullable']
                 : ['required', 'integer', Rule::in($societyIds)],
@@ -98,6 +99,7 @@ class EventController extends Controller
             'audience_notes' => $validated['audience'] === 'others' ? ($validated['audience_notes'] ?? null) : null,
             'created_by' => $user->id,
             'status' => 'active',
+            'late_threshold_minutes' => $validated['late_threshold_minutes'] ?? 5,
         ];
 
         $event = Event::create($payload);
@@ -154,6 +156,7 @@ class EventController extends Controller
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],
+            'late_threshold_minutes' => ['nullable', 'integer', 'min:0', 'max:720'],
             'society_id' => $isLsgContext
                 ? ['nullable', Rule::in($societyIds)]
                 : ['required', 'integer', Rule::in($societyIds)],
@@ -165,6 +168,7 @@ class EventController extends Controller
             ...$validated,
             'society_id' => $isLsgContext ? null : $validated['society_id'],
             'audience_notes' => $validated['audience'] === 'others' ? ($validated['audience_notes'] ?? null) : null,
+            'late_threshold_minutes' => $validated['late_threshold_minutes'] ?? 5,
         ];
 
         $event->update($payload);

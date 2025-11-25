@@ -14,7 +14,7 @@
 
     <div class="py-8">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="card p-6 space-y-4">
+            <div class="card p-6 space-y-6">
                 @php
                     $audienceLabels = [
                         'society_members' => 'Society members',
@@ -26,24 +26,28 @@
                     ];
                     $audienceLabel = $audienceLabels[$event->audience] ?? ucwords(str_replace('_', ' ', $event->audience));
                 @endphp
-                <div class="flex flex-wrap gap-3 text-sm text-slate-700">
+
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm text-slate-700">
                     @if ($event->location)
-                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100">
-                            📍 {{ $event->location }}
-                        </span>
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
+                            📍 <span>{{ $event->location }}</span>
+                        </div>
                     @endif
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-900">
-                        Mode: {{ ucfirst($event->attendance_mode) }}
-                    </span>
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100">
-                        Audience: {{ $audienceLabel }} @if($event->audience === 'others' && $event->audience_notes) ({{ $event->audience_notes }}) @endif
-                    </span>
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full {{ $event->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                        Status: {{ ucfirst($event->status) }}
-                    </span>
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100">
-                        Created by {{ $event->creator->name }}
-                    </span>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-900">
+                        <span class="font-semibold">Mode:</span> {{ ucfirst($event->attendance_mode) }}
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
+                        <span class="font-semibold">Audience:</span> {{ $audienceLabel }} @if($event->audience === 'others' && $event->audience_notes) ({{ $event->audience_notes }}) @endif
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
+                        <span class="font-semibold">Late threshold:</span> {{ $event->late_threshold_minutes ?? 0 }} mins
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg {{ $event->status === 'cancelled' ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800' }}">
+                        <span class="font-semibold">Status:</span> {{ ucfirst($event->status) }}
+                    </div>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
+                        <span class="font-semibold">Created by:</span> {{ $event->creator->name }}
+                    </div>
                 </div>
 
                 <div class="prose max-w-none text-slate-800">
@@ -54,21 +58,40 @@
                     $authUser = auth()->user();
                     $role = $authUser->role?->slug;
                     $canManage = false;
+                    $canViewReport = false;
 
                     if ($role === 'admin') {
                         $canManage = true;
+                        $canViewReport = true;
                     } elseif ($role === 'lsg_officer') {
                         $canManage = $event->society_id === null || $event->creator?->role?->slug === 'lsg_officer';
+                        $canViewReport = in_array($event->audience, ['ceit_students', 'all_officers'], true);
                     } elseif ($role === 'officer') {
                         $canManage = $authUser->societies()->pluck('societies.id')->contains($event->society_id);
+                        $canViewReport = $canManage;
                     }
                 @endphp
 
-                @if ($canManage)
-                    <div class="pt-4 flex items-center gap-3">
+                <div class="flex flex-wrap justify-between">
+                    @if ($canManage)
+                    <div class="flex flex-wrap items-center gap-3">
                         <a href="{{ route('events.attendance', $event) }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-psits-800)] text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-[var(--color-psits-700)]">
                             Go to Attendance
                         </a>
+
+                        @if ($canViewReport && $role === 'officer')
+                        <a href="{{ route('events.report', $event) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700">
+                            View Attendance Report
+                        </a>
+                        @endif
+
+                        @if ($canViewReport && $role === 'lsg_officer')
+                        <a href="{{ route('lsg.analytics', $event) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700">
+                            View Analytics
+                        </a>
+                        @endif
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
                         <a href="{{ route('events.edit', $event) }}" class="text-sm text-blue-800 hover:text-blue-900 font-semibold">Edit</a>
                         @if($event->status !== 'cancelled')
                         <form method="POST" action="{{ route('events.cancel', $event) }}" onsubmit="return confirm('Cancel this event?')">
@@ -78,7 +101,8 @@
                         </form>
                         @endif
                     </div>
-                @endif
+                    @endif
+                </div>
             </div>
         </div>
     </div>
