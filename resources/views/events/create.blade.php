@@ -53,7 +53,7 @@
                             <x-input-label for="attendance_mode" :value="__('Attendance Mode')" />
                             <select id="attendance_mode" name="attendance_mode" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
                                 @foreach (['qr' => 'QR scanning', 'manual' => 'Manual ID', 'hybrid' => 'Hybrid'] as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('attendance_mode') === $value)>{{ $label }}</option>
+                                    <option value="{{ $value }}" @selected(old('attendance_mode', 'hybrid') === $value)>{{ $label }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('attendance_mode')" class="mt-2" />
@@ -62,8 +62,12 @@
                         <div>
                             <x-input-label for="society_id" :value="__('Society')" />
                             @if ($role === 'lsg_officer')
+                                <input type="hidden" name="society_id" value="">
+                                <x-text-input id="society_readonly" type="text" class="mt-1 block w-full" value="CEIT-LSG event" readonly />
+                            @elseif ($role === 'officer')
                                 <input type="hidden" name="society_id" value="{{ old('society_id', $defaultSocietyId) }}">
-                                <div class="mt-1 text-sm text-slate-700">CEIT (LSG event)</div>
+                                <x-text-input id="society_readonly" type="text" class="mt-1 block w-full" value="{{ $societies->first()?->abbreviation }}" readonly />
+                                <x-input-error :messages="$errors->get('society_id')" class="mt-2" />
                             @else
                                 <select id="society_id" name="society_id" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
                                     <option value="">{{ __('Select society') }}</option>
@@ -76,63 +80,31 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <x-input-label for="type" :value="__('Type')" />
-                            <select id="type" name="type" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
-                                @foreach ($types as $type)
-                                    <option value="{{ $type }}" @selected(old('type') === $type)>{{ ucfirst($type) }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('type')" class="mt-2" />
-                        </div>
-                        <div>
-                            <x-input-label for="template" :value="__('Template')" />
-                            <select id="template" name="template" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
-                                <option value="">{{ __('None') }}</option>
-                                @foreach ($templates as $tpl)
-                                    <option value="{{ $tpl }}" @selected(old('template') === $tpl)>{{ $tpl }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('template')" class="mt-2" />
-                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <x-input-label for="audience" :value="__('Audience')" />
-                            <select id="audience" name="audience" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
+                            <select id="audience" name="audience" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700" data-toggle-notes>
                                 @foreach ($audiences as $aud)
-                                    <option value="{{ $aud }}" @selected(old('audience') === $aud)>{{ ucwords(str_replace('_',' ', $aud)) }}</option>
+                                    @php
+                                        $labels = [
+                                            'society_members' => 'Society members',
+                                            'society_officers' => 'Society officers only',
+                                            'others' => 'Others (see note)',
+                                            'ceit_students' => 'All CEIT students',
+                                            'lsg_officers' => 'CEIT-LSG officers',
+                                            'all_officers' => 'All officers (society + LSG)',
+                                        ];
+                                    @endphp
+                                    <option value="{{ $aud }}" @selected(old('audience') === $aud)>{{ $labels[$aud] ?? ucwords(str_replace('_',' ', $aud)) }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('audience')" class="mt-2" />
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <x-input-label for="audience_years" :value="__('Year scope (comma separated)')" />
-                            <x-text-input id="audience_years" name="audience_years" type="text" class="mt-1 block w-full" value="{{ old('audience_years') }}" placeholder="e.g., 1,2" />
-                            <x-input-error :messages="$errors->get('audience_years')" class="mt-2" />
-                        </div>
-                        <div class="flex items-center gap-2 mt-6">
-                            <input type="checkbox" id="require_timeout" name="require_timeout" value="1" class="rounded border-gray-300 text-blue-700 focus:ring-blue-700" @checked(old('require_timeout', true))>
-                            <x-input-label for="require_timeout" :value="__('Require time-out')" />
-                        </div>
-                        <div>
-                            <x-input-label for="visibility" :value="__('Visibility')" />
-                            <select id="visibility" name="visibility" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700">
-                                @foreach (['students' => 'Students', 'officers' => 'Officers only', 'all' => 'All roles'] as $val => $label)
-                                    <option value="{{ $val }}" @selected(old('visibility') === $val)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('visibility')" class="mt-2" />
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" id="is_ceit_wide" name="is_ceit_wide" value="1" class="mt-1 rounded border-gray-300 text-blue-700 focus:ring-blue-700" @checked(old('is_ceit_wide'))>
-                        <div>
-                            <x-input-label for="is_ceit_wide" :value="__('CEIT-wide event')" />
-                            <p class="text-xs text-slate-500">Check only if the event is intended for all CEIT students (department scope).</p>
+                        <div data-notes-container class="{{ old('audience') === 'others' ? '' : 'hidden' }}">
+                            <x-input-label for="audience_notes" :value="__('Audience notes (shown to students)')" />
+                            <x-text-input id="audience_notes" name="audience_notes" type="text" class="mt-1 block w-full" value="{{ old('audience_notes') }}" placeholder="e.g., Officers + volunteers" />
+                            <x-input-error :messages="$errors->get('audience_notes')" class="mt-2" />
                         </div>
                     </div>
 
@@ -143,4 +115,23 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audienceSelect = document.querySelector('[data-toggle-notes]');
+            const notesField = document.querySelector('[data-notes-container]');
+
+            if (!audienceSelect || !notesField) return;
+
+            audienceSelect.addEventListener('change', (event) => {
+                if (event.target.value === 'others') {
+                    notesField.classList.remove('hidden');
+                } else {
+                    notesField.classList.add('hidden');
+                    const input = notesField.querySelector('input');
+                    if (input) input.value = '';
+                }
+            });
+        });
+    </script>
 </x-app-layout>

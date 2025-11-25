@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Society;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class EventController extends Controller
@@ -15,58 +16,25 @@ class EventController extends Controller
         $user = $request->user();
         $role = $user->role?->slug;
 
-        $query = Event::with(['society', 'creator'])
+        $query = Event::with(['society', 'creator.role'])
             ->orderBy('start_at', 'desc');
 
         if ($role === 'officer') {
             $societyIds = $user->societies()->pluck('societies.id');
-            $query->whereIn('society_id', $societyIds);
-        }
-
-        if ($role === 'lsg_officer') {
-            $query->whereIn('type', ['ceit', 'lsg']);
-        }
-
-        if ($role === 'student') {
-            $societyIds = $user->societies()->pluck('societies.id');
-            $isSocOfficer = $user->is_society_officer;
-            $isLsgOfficer = $user->is_lsg_officer;
-            $year = $user->year_level;
-
-            $query->where(function ($sub) use ($societyIds, $isSocOfficer, $isLsgOfficer, $year) {
-                $sub->where(function ($q) use ($societyIds) {
-                    $q->whereIn('audience', ['all', 'society'])
-                        ->whereIn('society_id', $societyIds);
-                })
-                ->orWhere(function ($q) use ($societyIds, $year) {
-                    $q->where('audience', 'year_specific')
-                        ->whereIn('society_id', $societyIds)
-                        ->where(function ($w) use ($year) {
-                            $w->whereRaw('FIND_IN_SET(?, audience_years)', [$year]);
-                        });
-                })
-                ->orWhere(function ($q) use ($societyIds, $isSocOfficer) {
-                    $q->where('audience', 'society_officers')
-                        ->whereIn('society_id', $societyIds)
-                        ->whereRaw($isSocOfficer ? '1=1' : '0=1');
-                })
-                ->orWhere(function ($q) use ($isLsgOfficer) {
-                    $q->where('audience', 'lsg_officers')
-                        ->whereRaw($isLsgOfficer ? '1=1' : '0=1');
-                })
-                ->orWhere(function ($q) use ($isSocOfficer, $isLsgOfficer) {
-                    $q->where('audience', 'lsg_and_society_officers')
-                        ->whereRaw(($isSocOfficer || $isLsgOfficer) ? '1=1' : '0=1');
-                })
-                ->orWhere(function ($q) use ($isSocOfficer, $isLsgOfficer) {
-                    // generic officers-only: allow if they flagged themselves as an officer (society or LSG)
-                    $q->where('audience', 'officers_only')
-                        ->whereRaw(($isSocOfficer || $isLsgOfficer) ? '1=1' : '0=1');
-                })
-                ->orWhere(function ($q) {
-                    $q->where('audience', 'all')->where('is_ceit_wide', true);
-                });
-            })->whereIn('visibility', ['students', 'all']);
+            $query->where(function ($q) use ($societyIds) {
+                $q->whereIn('society_id', $societyIds)
+                    ->orWhere(function ($lsg) {
+                        $lsg->whereNull('society_id')
+                            ->where('audience', 'ceit_students');
+                    });
+            });
+        } elseif ($role === 'lsg_officer') {
+            $query->where(function ($q) {
+                $q->whereNull('society_id')
+                    ->orWhereHas('creator.role', fn ($role) => $role->where('slug', 'lsg_officer'));
+            });
+        } elseif ($role === 'student') {
+            $query->visibleToStudent($user);
         }
 
         $events = $query->paginate(10);
@@ -84,13 +52,13 @@ class EventController extends Controller
             default => Society::orderBy('abbreviation')->get(),
         };
 
-        $templates = ['GA', 'Meeting', 'Seminar', 'Formal Event'];
-        $types = ['society', 'ceit', 'lsg', 'meeting'];
-        $audiences = ['society', 'year_specific', 'all', 'officers_only', 'society_officers', 'lsg_officers', 'lsg_and_society_officers'];
+        $audiences = $role === 'lsg_officer'
+            ? ['ceit_students', 'lsg_officers', 'all_officers', 'others']
+            : ['society_members', 'society_officers', 'others'];
 
         $defaultSocietyId = $societies->first()?->id;
 
-        return view('events.create', compact('societies', 'templates', 'types', 'audiences', 'role', 'defaultSocietyId'));
+        return view('events.create', compact('societies', 'audiences', 'role', 'defaultSocietyId'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -101,18 +69,14 @@ class EventController extends Controller
         $societyIds = $role === 'officer'
             ? $user->societies()->pluck('societies.id')->toArray()
             : Society::pluck('id')->toArray();
-        $fallbackSocietyId = $societyIds[0] ?? null;
 
-        // LSG can create either CEIT-wide or LSG-only (meeting) events; keep society_id fixed but don't force CEIT-wide for meetings.
-        if ($role === 'lsg_officer') {
-            $incomingType = $request->input('type', 'lsg');
-            $normalizedType = $incomingType === 'ceit' ? 'ceit' : 'lsg';
-            $request->merge([
-                'society_id' => $fallbackSocietyId,
-                'type' => $normalizedType,
-                'is_ceit_wide' => $normalizedType === 'ceit' ? true : $request->boolean('is_ceit_wide', false),
-            ]);
-        }
+        $audienceOptions = $role === 'lsg_officer'
+            ? ['ceit_students', 'lsg_officers', 'all_officers', 'others']
+            : ['society_members', 'society_officers', 'others'];
+
+        $request->merge([
+            'attendance_mode' => $request->input('attendance_mode', 'hybrid'),
+        ]);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -121,23 +85,22 @@ class EventController extends Controller
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],
-            'society_id' => ['required', 'integer', 'in:'.implode(',', $societyIds)],
-            'is_ceit_wide' => ['boolean'],
-            'type' => ['required', 'string'],
-            'template' => ['nullable', 'string', 'max:100'],
-            'audience' => ['required', 'string', 'in:society,year_specific,all,officers_only,society_officers,lsg_officers,lsg_and_society_officers'],
-            'audience_years' => ['nullable', 'string', 'max:50'],
-            'require_timeout' => ['boolean'],
-            'visibility' => ['required', 'string', 'in:students,officers,all'],
+            'society_id' => $role === 'lsg_officer'
+                ? ['nullable']
+                : ['required', 'integer', Rule::in($societyIds)],
+            'audience' => ['required', Rule::in($audienceOptions)],
+            'audience_notes' => [Rule::requiredIf(fn () => $request->input('audience') === 'others'), 'nullable', 'string', 'max:255'],
         ]);
 
-        $validated['created_by'] = $user->id;
-        $validated['society_id'] = $request->input('society_id', $fallbackSocietyId);
-        $validated['is_ceit_wide'] = $request->boolean('is_ceit_wide');
-        $validated['require_timeout'] = $request->boolean('require_timeout');
-        $validated['status'] = 'active';
+        $payload = [
+            ...$validated,
+            'society_id' => $role === 'lsg_officer' ? null : $validated['society_id'],
+            'audience_notes' => $validated['audience'] === 'others' ? ($validated['audience_notes'] ?? null) : null,
+            'created_by' => $user->id,
+            'status' => 'active',
+        ];
 
-        $event = Event::create($validated);
+        $event = Event::create($payload);
 
         return redirect()->route('events.show', $event)->with('status', 'Event created.');
     }
@@ -152,13 +115,13 @@ class EventController extends Controller
             'officer' => $user->societies()->get(),
             default => Society::orderBy('abbreviation')->get(),
         };
-        $templates = ['GA', 'Meeting', 'Seminar', 'Formal Event'];
-        $types = ['society', 'ceit', 'lsg', 'meeting'];
-        $audiences = ['society', 'year_specific', 'all', 'officers_only', 'society_officers', 'lsg_officers', 'lsg_and_society_officers'];
+        $audiences = ($role === 'lsg_officer' || $event->society_id === null)
+            ? ['ceit_students', 'lsg_officers', 'all_officers', 'others']
+            : ['society_members', 'society_officers', 'others'];
 
         $defaultSocietyId = $societies->first()?->id;
 
-        return view('events.edit', compact('event', 'societies', 'templates', 'types', 'audiences', 'role', 'defaultSocietyId'));
+        return view('events.edit', compact('event', 'societies', 'audiences', 'role', 'defaultSocietyId'));
     }
 
     public function update(Request $request, Event $event): RedirectResponse
@@ -171,15 +134,18 @@ class EventController extends Controller
             'officer' => $user->societies()->pluck('societies.id')->toArray(),
             default => Society::pluck('id')->toArray(),
         };
-        $fallbackSocietyId = $societyIds[0] ?? null;
 
-        if ($role === 'lsg_officer') {
-            $request->merge([
-                'society_id' => $fallbackSocietyId,
-                'is_ceit_wide' => true,
-                'type' => 'ceit',
-            ]);
-        }
+        $isLsgContext = $role === 'lsg_officer'
+            || $event->society_id === null
+            || in_array($event->audience, ['ceit_students', 'lsg_officers', 'all_officers'], true);
+
+        $audienceOptions = $isLsgContext
+            ? ['ceit_students', 'lsg_officers', 'all_officers', 'others']
+            : ['society_members', 'society_officers', 'others'];
+
+        $request->merge([
+            'attendance_mode' => $request->input('attendance_mode', 'hybrid'),
+        ]);
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -188,21 +154,20 @@ class EventController extends Controller
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],
-            'society_id' => ['required', 'integer', 'in:'.implode(',', $societyIds)],
-            'is_ceit_wide' => ['boolean'],
-            'type' => ['required', 'string'],
-            'template' => ['nullable', 'string', 'max:100'],
-            'audience' => ['required', 'string', 'in:society,year_specific,all,officers_only,society_officers,lsg_officers,lsg_and_society_officers'],
-            'audience_years' => ['nullable', 'string', 'max:50'],
-            'require_timeout' => ['boolean'],
-            'visibility' => ['required', 'string', 'in:students,officers,all'],
+            'society_id' => $isLsgContext
+                ? ['nullable', Rule::in($societyIds)]
+                : ['required', 'integer', Rule::in($societyIds)],
+            'audience' => ['required', Rule::in($audienceOptions)],
+            'audience_notes' => [Rule::requiredIf(fn () => $request->input('audience') === 'others'), 'nullable', 'string', 'max:255'],
         ]);
 
-        $validated['is_ceit_wide'] = $request->boolean('is_ceit_wide');
-        $validated['require_timeout'] = $request->boolean('require_timeout');
-        $validated['society_id'] = $request->input('society_id', $fallbackSocietyId);
+        $payload = [
+            ...$validated,
+            'society_id' => $isLsgContext ? null : $validated['society_id'],
+            'audience_notes' => $validated['audience'] === 'others' ? ($validated['audience_notes'] ?? null) : null,
+        ];
 
-        $event->update($validated);
+        $event->update($payload);
 
         return redirect()->route('events.show', $event)->with('status', 'Event updated.');
     }
@@ -222,9 +187,14 @@ class EventController extends Controller
         $user = $request->user();
         $role = $user->role?->slug;
 
+        $event->loadMissing(['society', 'creator.role']);
+
         if ($role === 'officer') {
             $societyIds = $user->societies()->pluck('societies.id');
-            abort_unless($societyIds->contains($event->society_id), 403);
+            $isOwnSocietyEvent = $event->society_id && $societyIds->contains($event->society_id);
+            $isCeitWideLsgEvent = in_array($event->audience, ['ceit_students', 'all_officers'], true)
+                && $event->creator?->role?->slug === 'lsg_officer';
+            abort_unless($isOwnSocietyEvent || $isCeitWideLsgEvent, 403);
         }
 
         return view('events.show', compact('event'));
@@ -237,16 +207,16 @@ class EventController extends Controller
     {
         $role = $user->role?->slug;
 
-        if (in_array($role, ['admin', 'lsg_officer'], true)) {
+        if ($role === 'admin') {
+            return;
+        }
+
+        if ($role === 'lsg_officer') {
+            abort_unless($event->society_id === null || $event->creator?->role?->slug === 'lsg_officer', 403);
             return;
         }
 
         if ($role === 'officer') {
-            // Officers cannot manage events created by LSG/admin
-            $creatorRole = $event->creator?->role?->slug;
-            if (in_array($creatorRole, ['lsg_officer', 'admin'], true)) {
-                abort(403);
-            }
             $societyIds = $user->societies()->pluck('societies.id');
             abort_unless($societyIds->contains($event->society_id), 403);
             return;

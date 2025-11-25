@@ -14,6 +14,7 @@ class EventSeeder extends Seeder
     {
         $now = Carbon::now();
         $officer = User::whereHas('role', fn ($q) => $q->where('slug', 'officer'))->first();
+        $lsgOfficer = User::whereHas('role', fn ($q) => $q->where('slug', 'lsg_officer'))->first();
         $psits = Society::where('slug', 'psits')->first();
         $pice = Society::where('slug', 'pice')->first();
         $icpep = Society::where('slug', 'icpep')->first();
@@ -26,15 +27,10 @@ class EventSeeder extends Seeder
                     'start_at' => $now->copy()->addDays(3),
                     'end_at' => $now->copy()->addDays(3)->addHours(2),
                     'location' => 'Auditorium',
-                    'attendance_mode' => 'qr',
-                    'is_ceit_wide' => false,
-                    'type' => 'society',
-                    'template' => 'GA',
-                    'audience' => 'society',
-                    'audience_years' => null,
-                    'require_timeout' => true,
+                    'attendance_mode' => 'hybrid',
+                    'audience' => 'society_members',
+                    'audience_notes' => null,
                     'status' => 'active',
-                    'visibility' => 'students',
                     'society_id' => $psits->id,
                     'created_by' => $officer->id,
                 ]
@@ -50,14 +46,9 @@ class EventSeeder extends Seeder
                     'end_at' => $now->copy()->addDays(5)->addHours(3),
                     'location' => 'CEIT Hall',
                     'attendance_mode' => 'hybrid',
-                    'is_ceit_wide' => false,
-                    'type' => 'society',
-                    'template' => 'Seminar',
-                    'audience' => 'year_specific',
-                    'audience_years' => '3,4',
-                    'require_timeout' => false,
+                    'audience' => 'others',
+                    'audience_notes' => '3rd & 4th year students',
                     'status' => 'active',
-                    'visibility' => 'students',
                     'society_id' => $pice->id,
                     'created_by' => $officer->id,
                 ]
@@ -73,22 +64,17 @@ class EventSeeder extends Seeder
                     'end_at' => $now->copy()->addDays(2)->addHours(1),
                     'location' => 'Lab 3',
                     'attendance_mode' => 'manual',
-                    'is_ceit_wide' => false,
-                    'type' => 'meeting',
-                    'template' => 'Meeting',
-                    'audience' => 'officers_only',
-                    'audience_years' => null,
-                    'require_timeout' => false,
+                    'audience' => 'society_officers',
+                    'audience_notes' => null,
                     'status' => 'active',
-                    'visibility' => 'officers',
                     'society_id' => $icpep->id,
                     'created_by' => $officer->id,
                 ]
             );
         }
 
-        // CEIT-wide sample
-        if ($psits && $officer) {
+        // CEIT-wide sample (LSG)
+        if ($lsgOfficer) {
             Event::firstOrCreate(
                 ['title' => 'CEIT Research Forum'],
                 [
@@ -96,17 +82,12 @@ class EventSeeder extends Seeder
                     'start_at' => $now->copy()->addDays(7),
                     'end_at' => $now->copy()->addDays(7)->addHours(4),
                     'location' => 'Main Hall',
-                    'attendance_mode' => 'qr',
-                    'is_ceit_wide' => true,
-                    'type' => 'ceit',
-                    'template' => 'Seminar',
-                    'audience' => 'all',
-                    'audience_years' => null,
-                    'require_timeout' => true,
+                    'attendance_mode' => 'hybrid',
+                    'audience' => 'ceit_students',
+                    'audience_notes' => null,
                     'status' => 'active',
-                    'visibility' => 'students',
-                    'society_id' => $psits->id,
-                    'created_by' => $officer->id,
+                    'society_id' => null,
+                    'created_by' => $lsgOfficer->id,
                 ]
             );
         }

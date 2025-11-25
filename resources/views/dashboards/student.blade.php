@@ -11,6 +11,17 @@
         </div>
     </x-slot>
 
+    @php
+        $audienceLabels = [
+            'society_members' => 'Society members',
+            'society_officers' => 'Society officers only',
+            'others' => 'Others',
+            'ceit_students' => 'All CEIT students',
+            'lsg_officers' => 'CEIT-LSG officers',
+            'all_officers' => 'All officers',
+        ];
+    @endphp
+
     <div class="py-10">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="grid gap-4 lg:grid-cols-3">
@@ -37,12 +48,14 @@
                     <div class="mt-4 space-y-3">
                         @forelse ($societyEvents as $ev)
                             <div class="border border-slate-100 rounded-lg p-3">
-                                <p class="text-xs font-semibold text-blue-800 uppercase">{{ $ev->society->abbreviation }}</p>
+                                <p class="text-xs font-semibold text-blue-800 uppercase">{{ $ev->scope_label }}</p>
                                 <p class="text-base font-semibold text-blue-950">{{ $ev->title }}</p>
                                 <p class="text-sm text-slate-600">{{ $ev->start_at->format('M d, Y g:i A') }}</p>
                                 @if($ev->location)
                                     <p class="text-xs text-slate-600 mt-1">📍 {{ $ev->location }}</p>
                                 @endif
+                                @php $audLabel = $audienceLabels[$ev->audience] ?? ucwords(str_replace('_',' ', $ev->audience)); @endphp
+                                <p class="text-xs text-slate-500 mt-1">Audience: {{ $audLabel }} @if($ev->audience === 'others' && $ev->audience_notes) — {{ $ev->audience_notes }} @endif</p>
                             </div>
                         @empty
                             <p class="text-sm text-slate-600">No events yet for your society.</p>
@@ -58,12 +71,14 @@
                     <div class="mt-4 space-y-3">
                         @forelse ($ceitEvents as $ev)
                             <div class="border border-slate-100 rounded-lg p-3">
-                                <p class="text-xs font-semibold text-blue-800 uppercase">{{ $ev->society->abbreviation }}</p>
+                                <p class="text-xs font-semibold text-blue-800 uppercase">{{ $ev->scope_label }}</p>
                                 <p class="text-base font-semibold text-blue-950">{{ $ev->title }}</p>
                                 <p class="text-sm text-slate-600">{{ $ev->start_at->format('M d, Y g:i A') }}</p>
                                 @if($ev->location)
                                     <p class="text-xs text-slate-600 mt-1">📍 {{ $ev->location }}</p>
                                 @endif
+                                @php $audLabel = $audienceLabels[$ev->audience] ?? ucwords(str_replace('_',' ', $ev->audience)); @endphp
+                                <p class="text-xs text-slate-500 mt-1">Audience: {{ $audLabel }} @if($ev->audience === 'others' && $ev->audience_notes) — {{ $ev->audience_notes }} @endif</p>
                             </div>
                         @empty
                             <p class="text-sm text-slate-600">No upcoming CEIT events.</p>
