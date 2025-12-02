@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'ollama' => [
+        'base_url' => env('OLLAMA_CLOUD_BASE_URL', 'https://ollama.com/api'),
+        'api_key' => env('OLLAMA_CLOUD_API_KEY'),
+        'model' => env('OLLAMA_CLOUD_MODEL', 'gpt-oss:120b-cloud'),
+        'timeout' => env('OLLAMA_CLOUD_TIMEOUT', 25),
+    ],
+
 ];

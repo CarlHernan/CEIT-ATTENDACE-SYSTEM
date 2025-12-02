@@ -26,6 +26,10 @@
                     <p class="text-xs font-semibold uppercase text-blue-800">Reporting</p>
                     <p class="mt-1 text-sm text-slate-700">Open an event → View Attendance Report for exports.</p>
                 </div>
+                <a href="{{ route('ai.insights') }}" class="card p-5 block hover:shadow-md transition">
+                    <p class="text-xs font-semibold uppercase text-blue-800">AI Attendance Q&A</p>
+                    <p class="mt-1 text-sm text-slate-700">Ask questions about your events and students based on current records.</p>
+                </a>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-2">

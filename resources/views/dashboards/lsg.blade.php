@@ -26,6 +26,10 @@
                     <p class="text-xs font-semibold uppercase text-blue-800">Analytics</p>
                     <p class="mt-1 text-sm text-slate-700">From an event page, use “View Analytics” for society breakdowns and absent lists.</p>
                 </div>
+                <a href="{{ route('ai.insights') }}" class="card p-5 hover:shadow-md transition block">
+                    <p class="text-xs font-semibold uppercase text-blue-800">AI Attendance Q&A</p>
+                    <p class="mt-1 text-sm text-slate-700">Ask questions on CEIT-wide attendance and officer participation.</p>
+                </a>
             </div>
 
             <div class="card p-6">

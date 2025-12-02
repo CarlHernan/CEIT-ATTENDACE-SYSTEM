@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\OfficerDashboardController;
 use App\Http\Controllers\LsgDashboardController;
+use App\Http\Controllers\AiController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\LsgAnalyticsController;
 
@@ -55,6 +56,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('lsg/events/{event}/analytics', [LsgAnalyticsController::class, 'show'])->name('lsg.analytics')->middleware('role:lsg_officer');
         Route::get('lsg/events/{event}/analytics/export', [LsgAnalyticsController::class, 'export'])->name('lsg.analytics.export')->middleware('role:lsg_officer');
         Route::get('lsg/events/{event}/analytics/export-absent', [LsgAnalyticsController::class, 'exportAbsent'])->name('lsg.analytics.export-absent')->middleware('role:lsg_officer');
+
+        // AI
+        Route::post('events/{event}/ai-summary', [AiController::class, 'generateSummary'])->name('events.ai.summary')->middleware('role:officer,lsg_officer,admin');
+        Route::get('ai/attendance-insights', [AiController::class, 'insightsPage'])->name('ai.insights')->middleware('role:officer,lsg_officer,admin');
+        Route::post('ai/attendance-question', [AiController::class, 'answerQuestion'])->name('ai.insights.ask')->middleware('role:officer,lsg_officer,admin');
     });
 
     Route::get('events/upcoming', [EventController::class, 'index'])->name('events.upcoming'); // student view filtered by visibility

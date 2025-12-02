@@ -210,6 +210,47 @@
                     </table>
                 </div>
             </div>
+
+            <div class="card p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-blue-900">AI Event Summary</h3>
+                    <button id="ai-summary-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">Generate AI Summary</button>
+                </div>
+                <div id="ai-summary-status" class="text-sm text-slate-500"></div>
+                <div id="ai-summary-result" class="prose max-w-none text-slate-800 hidden"></div>
+            </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('ai-summary-btn');
+            const statusEl = document.getElementById('ai-summary-status');
+            const resultEl = document.getElementById('ai-summary-result');
+
+            if (btn) {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    statusEl.textContent = 'Generating...';
+                    resultEl.classList.add('hidden');
+                    try {
+                        const resp = await fetch('{{ route('events.ai.summary', $event) }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                            },
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.message || 'Failed to generate summary');
+                        resultEl.innerHTML = `<p>${data.summary.replace(/\\n/g, '<br>')}</p>`;
+                        resultEl.classList.remove('hidden');
+                        statusEl.textContent = 'Done.';
+                    } catch (err) {
+                        statusEl.textContent = err.message;
+                    }
+                });
+            }
+        });
+    </script>
 </x-app-layout>

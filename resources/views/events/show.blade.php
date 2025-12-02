@@ -98,6 +98,12 @@
                             View Analytics
                         </a>
                         @endif
++
++                        @if (in_array($role, ['officer','lsg_officer','admin']))
++                        <a href="{{ route('ai.insights') }}" class="inline-flex items-center px-4 py-2 bg-slate-200 text-blue-900 rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-300">
++                            AI Attendance Q&A
++                        </a>
++                        @endif
                     </div>
                     @endif
 
