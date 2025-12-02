@@ -36,6 +36,11 @@ class AttendanceController extends Controller
             $filters['society'] = null;
         }
 
+        // For CEIT-wide events, officers can view only their own society members.
+        if ($role === 'officer' && $event->audience === 'ceit_students') {
+            $filters['society'] = $societies->pluck('id')->first();
+        }
+
         $records = AttendanceRecord::with(['user', 'recorder'])
             ->where('event_id', $event->id)
             ->when($filters['course'], fn ($q, $course) => $q->whereHas('user', fn ($sub) => $sub->where('course', $course)))
@@ -105,6 +110,13 @@ class AttendanceController extends Controller
             'recorded_by' => $user->id,
         ]);
 
+        // Restrict society officers on CEIT-wide events to recording only their own society members.
+        if ($user->role?->slug === 'officer' && $event->audience === 'ceit_students') {
+            $officerSocietyIds = $user->societies()->pluck('societies.id');
+            $isSameSociety = $target->societies()->whereIn('societies.id', $officerSocietyIds)->exists();
+            abort_unless($isSameSociety, 403);
+        }
+
         $now = Carbon::now();
 
         if ($data['mode'] === 'time_in') {
@@ -146,7 +158,9 @@ class AttendanceController extends Controller
 
         if ($role === 'officer') {
             $societyIds = $user->societies()->pluck('societies.id');
-            abort_unless($societyIds->contains($event->society_id), 403);
+            $isOwnSocietyEvent = $event->society_id && $societyIds->contains($event->society_id);
+            $isCeitWide = $event->audience === 'ceit_students';
+            abort_unless($isOwnSocietyEvent || $isCeitWide, 403);
             return;
         }
 
@@ -173,6 +187,13 @@ class AttendanceController extends Controller
     {
         $this->authorizeAccess($request->user(), $event);
         $filters = $request->only(['course', 'year_level', 'society']);
+
+        // Force society filter for officers on CEIT-wide events.
+        if ($request->user()->role?->slug === 'officer' && $event->audience === 'ceit_students') {
+            $officerSocietyId = $request->user()->societies()->pluck('societies.id')->first();
+            $filters['society'] = $officerSocietyId;
+        }
+
         $export = new EventAttendanceExport($event, $filters);
         $export->fileName = 'attendance-'.$event->id.'.xlsx';
         return Excel::download($export, $export->fileName);

@@ -54,10 +54,17 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div class="border rounded-lg p-4 bg-white">
-                            <h3 class="text-lg font-semibold text-blue-900 mb-3">QR Scan</h3>
-                            <div id="qr-reader" class="border rounded-lg overflow-hidden"></div>
-                            <p class="text-xs text-slate-500 mt-2">Uses Html5Qrcode (camera permission required).</p>
+                        <div class="border rounded-lg p-4 bg-white space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-blue-900">QR Scan</h3>
+                                <div class="flex items-center gap-2">
+                                    <button id="qr-start" class="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Start</button>
+                                    <button id="qr-stop" class="px-3 py-1 text-sm bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Stop</button>
+                                </div>
+                            </div>
+                            <div id="qr-reader" class="border rounded-lg overflow-hidden min-h-[200px]"></div>
+                            <p class="text-xs text-slate-500">Uses Html5Qrcode (camera permission required).</p>
+                            <p id="qr-status" class="text-xs text-slate-600"></p>
                         </div>
                         <div class="border rounded-lg p-4 bg-white space-y-3">
                             <h3 class="text-lg font-semibold text-blue-900">Manual Entry</h3>
@@ -286,25 +293,94 @@
                 }, `ID: ${id}`);
             });
 
-            function startScanner() {
-                if (!window.Html5QrcodeScanner) return;
+            const qrStatus = document.getElementById('qr-status');
+            const qrStartBtn = document.getElementById('qr-start');
+            const qrStopBtn = document.getElementById('qr-stop');
+            let qrInstance = null;
+            let scannerActive = false;
 
-                const scanner = new Html5QrcodeScanner('qr-reader', {
-                    fps: 10,
-                    qrbox: 250,
-                });
+            function setQrStatus(message) {
+                if (qrStatus) qrStatus.textContent = message || '';
+            }
 
-                scanner.render((decodedText) => {
-                    recordAttendance({
-                        mode: modeEl.value,
-                        method: 'qr',
-                        qr_raw_text: decodedText,
-                    }, decodedText);
-                }, (err) => {
-                    console.debug('QR error', err);
+            function ensureHtml5Qrcode() {
+                return new Promise((resolve, reject) => {
+                    if (window.Html5Qrcode) return resolve();
+                    let script = document.getElementById('html5qrcode-script');
+                    if (!script) {
+                        script = document.createElement('script');
+                        script.id = 'html5qrcode-script';
+                        script.src = 'https://unpkg.com/html5-qrcode';
+                        script.async = true;
+                        document.head.appendChild(script);
+                    }
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error('QR library failed to load'));
                 });
             }
 
+            async function startScanner() {
+                try {
+                    await ensureHtml5Qrcode();
+                } catch (err) {
+                    setQrStatus(err.message);
+                    return;
+                }
+                if (scannerActive) return;
+
+                // Reset container to avoid stale nodes that cause removeChild errors.
+                const container = document.getElementById('qr-reader');
+                if (container) {
+                    container.innerHTML = '';
+                }
+
+                qrInstance = new Html5Qrcode('qr-reader');
+                try {
+                    await qrInstance.start(
+                        { facingMode: 'environment' },
+                        { fps: 10, qrbox: 250 },
+                        (decodedText) => {
+                            recordAttendance({
+                                mode: modeEl.value,
+                                method: 'qr',
+                                qr_raw_text: decodedText,
+                            }, decodedText);
+                        }
+                    );
+                    scannerActive = true;
+                    setQrStatus('Scanner running. Point camera at the QR.');
+                } catch (err) {
+                    setQrStatus('Unable to start scanner: ' + err.message);
+                }
+            }
+
+            async function stopScanner() {
+                if (qrInstance && scannerActive) {
+                    try {
+                        await qrInstance.stop();
+                        await qrInstance.clear();
+                    } catch (err) {
+                        console.warn('Stop scanner error', err);
+                    }
+                }
+                scannerActive = false;
+                setQrStatus('Scanner stopped.');
+            }
+
+            if (qrStartBtn) {
+                qrStartBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    startScanner();
+                });
+            }
+            if (qrStopBtn) {
+                qrStopBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    stopScanner();
+                });
+            }
+
+            // Auto-start on load
             startScanner();
         });
     </script>

@@ -19,7 +19,7 @@ class EventReportController extends Controller
         $this->authorizeOfficer($request->user(), $event);
 
         [$records, $summary, $filters] = $this->buildAttendanceData($request, $event);
-        $absent = $this->computeAbsent($event, $filters);
+        $absent = $this->computeAbsent($event, $filters, $request->user());
 
         return view('events.report', [
             'event' => $event,
@@ -46,7 +46,7 @@ class EventReportController extends Controller
     {
         $this->authorizeOfficer($request->user(), $event);
         $filters = $this->extractFilters($request);
-        $expectedIds = $this->expectedUserIds($event);
+        $expectedIds = $this->expectedUserIds($event, $request->user());
         $format = $request->input('format', 'xlsx');
         $file = "absent-event-{$event->id}.{$format}";
         $export = new EventAbsentExport($event, $expectedIds, $filters, $file);
@@ -87,9 +87,9 @@ class EventReportController extends Controller
         return [$records, $summary, $filters];
     }
 
-    protected function computeAbsent(Event $event, array $filters)
+    protected function computeAbsent(Event $event, array $filters, User $requester)
     {
-        $expectedIds = $this->expectedUserIds($event);
+        $expectedIds = $this->expectedUserIds($event, $requester);
         $attendedIds = $event->attendanceRecords()->pluck('user_id')->all();
         $absentIds = array_values(array_diff($expectedIds, $attendedIds));
 
@@ -121,7 +121,7 @@ class EventReportController extends Controller
         ];
     }
 
-    protected function expectedUserIds(Event $event): array
+    protected function expectedUserIds(Event $event, User $requester): array
     {
         $aud = $event->audience;
         $societyId = $event->society_id;
@@ -140,11 +140,22 @@ class EventReportController extends Controller
         };
 
         // Exclude management-only accounts (admin/LSG) and the event creator from expected/absent lists.
-        return User::whereIn('id', $ids)
+        $filtered = User::whereIn('id', $ids)
             ->whereHas('role', fn ($r) => $r->whereNotIn('slug', ['admin', 'lsg_officer']))
             ->where('id', '!=', $creatorId)
             ->pluck('id')
             ->all();
+
+        // If a society officer is requesting a CEIT-wide event, restrict expected/absent to their own society only.
+        if ($requester->role?->slug === 'officer' && $event->audience === 'ceit_students') {
+            $officerSocietyIds = $requester->societies()->pluck('societies.id');
+            return User::whereIn('id', $filtered)
+                ->whereHas('societies', fn ($q) => $q->whereIn('societies.id', $officerSocietyIds))
+                ->pluck('id')
+                ->all();
+        }
+
+        return $filtered;
     }
 
     protected function eventHasEnded(Event $event): bool

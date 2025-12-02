@@ -47,7 +47,7 @@ class LsgAnalyticsController extends Controller
     {
         $this->authorizeLsg($request->user(), $event);
         $filters = $this->extractFilters($request);
-        $expectedIds = $this->expectedUserIds($event);
+        $expectedIds = $this->expectedUserIds($event, $request->user());
         $format = $request->input('format', 'xlsx');
         $file = "absent-event-{$event->id}.{$format}";
         $export = new EventAbsentExport($event, $expectedIds, $filters, $file);
@@ -85,7 +85,7 @@ class LsgAnalyticsController extends Controller
 
     protected function computeAbsent(Event $event, array $filters)
     {
-        $expectedIds = $this->expectedUserIds($event);
+        $expectedIds = $this->expectedUserIds($event, $request->user());
         $attendedIds = $event->attendanceRecords()->pluck('user_id')->all();
         $absentIds = array_values(array_diff($expectedIds, $attendedIds));
 
@@ -131,7 +131,7 @@ class LsgAnalyticsController extends Controller
         ];
     }
 
-    protected function expectedUserIds(Event $event): array
+    protected function expectedUserIds(Event $event, User $requester): array
     {
         $aud = $event->audience;
         $societyId = $event->society_id;
@@ -150,11 +150,22 @@ class LsgAnalyticsController extends Controller
         };
 
         // Exclude management-only accounts (admin/LSG) and the event creator.
-        return User::whereIn('id', $ids)
+        $filtered = User::whereIn('id', $ids)
             ->whereHas('role', fn ($r) => $r->whereNotIn('slug', ['admin', 'lsg_officer']))
             ->where('id', '!=', $creatorId)
             ->pluck('id')
             ->all();
+
+        // If a society officer somehow hits this (shouldn’t via route), still restrict to their society on CEIT-wide.
+        if ($requester->role?->slug === 'officer' && $event->audience === 'ceit_students') {
+            $officerSocietyIds = $requester->societies()->pluck('societies.id');
+            return User::whereIn('id', $filtered)
+                ->whereHas('societies', fn ($q) => $q->whereIn('societies.id', $officerSocietyIds))
+                ->pluck('id')
+                ->all();
+        }
+
+        return $filtered;
     }
 
     protected function eventHasEnded(Event $event): bool

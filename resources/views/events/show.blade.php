@@ -30,7 +30,7 @@
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm text-slate-700">
                     @if ($event->location)
                         <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
-                            📍 <span>{{ $event->location }}</span>
+                            ?? <span>{{ $event->location }}</span>
                         </div>
                     @endif
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-900">
@@ -58,22 +58,30 @@
                     $authUser = auth()->user();
                     $role = $authUser->role?->slug;
                     $canManage = false;
+                    $canAttendance = false;
                     $canViewReport = false;
+
+                    $isCeitWide = $event->audience === 'ceit_students';
+                    $userSocietyIds = $authUser->societies()->pluck('societies.id');
 
                     if ($role === 'admin') {
                         $canManage = true;
+                        $canAttendance = true;
                         $canViewReport = true;
                     } elseif ($role === 'lsg_officer') {
                         $canManage = $event->society_id === null || $event->creator?->role?->slug === 'lsg_officer';
+                        $canAttendance = $canManage || $isCeitWide;
                         $canViewReport = in_array($event->audience, ['ceit_students', 'all_officers'], true);
                     } elseif ($role === 'officer') {
-                        $canManage = $authUser->societies()->pluck('societies.id')->contains($event->society_id);
-                        $canViewReport = $canManage;
+                        $isOwnSocietyEvent = $event->society_id && $userSocietyIds->contains($event->society_id);
+                        $canManage = $isOwnSocietyEvent; // edit/cancel only their own events
+                        $canAttendance = $isOwnSocietyEvent || $isCeitWide; // can record on CEIT-wide
+                        $canViewReport = $isOwnSocietyEvent; // reports remain for their own events only
                     }
                 @endphp
 
                 <div class="flex flex-wrap justify-between">
-                    @if ($canManage)
+                    @if ($canAttendance)
                     <div class="flex flex-wrap items-center gap-3">
                         <a href="{{ route('events.attendance', $event) }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-psits-800)] text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-[var(--color-psits-700)]">
                             Go to Attendance
@@ -91,6 +99,9 @@
                         </a>
                         @endif
                     </div>
+                    @endif
+
+                    @if ($canManage)
                     <div class="flex flex-wrap items-center gap-3">
                         <a href="{{ route('events.edit', $event) }}" class="text-sm text-blue-800 hover:text-blue-900 font-semibold">Edit</a>
                         @if($event->status !== 'cancelled')
