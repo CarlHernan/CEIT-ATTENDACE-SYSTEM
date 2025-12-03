@@ -25,7 +25,7 @@
     @endphp
 
     <div class="py-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="grid gap-4 md:grid-cols-3">
                 <div class="rounded-2xl bg-[var(--color-navy-900)] text-white p-6 shadow-[var(--shadow-card-strong)]">
                     <p class="text-sm font-semibold text-white/80">Society events attended</p>
