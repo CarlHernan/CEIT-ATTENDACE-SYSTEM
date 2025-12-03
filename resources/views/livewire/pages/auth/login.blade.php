@@ -65,6 +65,16 @@ new #[Layout('layouts.guest')] class extends Component
                 ]);
             }
         }
+        // Student/general portal: block privileged roles from logging in here.
+        if ($this->portal === 'general') {
+            $slug = $user?->role?->slug;
+            if (in_array($slug, ['officer', 'lsg_officer', 'admin'], true)) {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'form.email' => __('Use the Officer/LSG login for your account.'),
+                ]);
+            }
+        }
 
         Session::regenerate();
 
@@ -107,12 +117,13 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <div class="relative">
+                <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full pr-10"
+                                type="password"
+                                name="password"
+                                required autocomplete="current-password" />
+                <button type="button" class="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-700 text-sm" onclick="togglePassword('password', this)">Show</button>
+            </div>
             <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
         </div>
 
@@ -172,4 +183,14 @@ new #[Layout('layouts.guest')] class extends Component
             </a>
         </div>
     </form>
+
+    <script>
+        function togglePassword(id, btn) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.textContent = isPassword ? 'Hide' : 'Show';
+        }
+    </script>
 </div>

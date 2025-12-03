@@ -39,8 +39,22 @@ class AiController extends Controller
     {
         $user = $request->user();
         $events = $this->queryVisibleEvents($user)->orderBy('start_at', 'desc')->limit(20)->get();
+        $selectedEventId = null;
 
-        return view('ai.insights', compact('events'));
+        if ($request->filled('event_id')) {
+            $candidateId = (int) $request->query('event_id');
+
+            // Ensure the requested event is in the dropdown if the user can see it.
+            $visibleCandidate = $this->queryVisibleEvents($user)->where('id', $candidateId)->first();
+            if ($visibleCandidate) {
+                $selectedEventId = $candidateId;
+                if (! $events->pluck('id')->contains($candidateId)) {
+                    $events->prepend($visibleCandidate);
+                }
+            }
+        }
+
+        return view('ai.insights', compact('events', 'selectedEventId'));
     }
 
     public function answerQuestion(Request $request)
@@ -75,6 +89,10 @@ class AiController extends Controller
 
     protected function buildEventContext(Event $event): array
     {
+        $tz = config('app.timezone', 'UTC');
+        $startLocal = optional($event->start_at)->timezone($tz);
+        $endLocal = optional($event->end_at)->timezone($tz);
+
         $records = AttendanceRecord::with(['user.societies'])
             ->where('event_id', $event->id)
             ->get();
@@ -117,8 +135,9 @@ class AiController extends Controller
             'event' => [
                 'title' => $event->title,
                 'description' => $event->description,
-                'start_at' => $event->start_at,
-                'end_at' => $event->end_at,
+                'start_at_local' => $startLocal?->format('M d, Y g:i A'),
+                'end_at_local' => $endLocal?->format('M d, Y g:i A'),
+                'timezone' => $tz,
                 'organizer' => $event->society?->abbreviation ?? 'CEIT-LSG',
                 'attendance_mode' => $event->attendance_mode,
                 'audience' => $event->audience,
@@ -139,6 +158,7 @@ class AiController extends Controller
 
     protected function buildStudentContext($requester, User $student, ?string $start = null, ?string $end = null): array
     {
+        $tz = config('app.timezone', 'UTC');
         $events = $this->queryVisibleEvents($requester)
             ->when($start, fn ($q) => $q->whereDate('start_at', '>=', $start))
             ->when($end, fn ($q) => $q->whereDate('start_at', '<=', $end))
@@ -147,9 +167,11 @@ class AiController extends Controller
             ->get(['id', 'title', 'start_at', 'audience', 'society_id']);
 
         $eventDetails = $events->map(function ($ev) {
+            $tzInner = config('app.timezone', 'UTC');
             return [
                 'title' => $ev->title,
-                'date' => $ev->start_at,
+                'date_local' => optional($ev->start_at)->timezone($tzInner)?->format('M d, Y g:i A'),
+                'timezone' => $tzInner,
                 'audience' => $ev->audience,
                 'society' => $ev->society?->abbreviation ?? null,
                 'attendance_count' => $ev->attendance_records_count,

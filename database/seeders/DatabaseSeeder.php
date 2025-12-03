@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
         $officer = User::firstOrCreate(
             ['email' => 'officer@ceit.local'],
             [
-                'name' => 'Eljun Alolod',
+                'name' => 'PSITS Soceity Officer',
                 'id_number' => 'PSITS-0001',
                 'course' => 'BSIT',
                 'year_level' => '3',
@@ -164,7 +164,7 @@ class DatabaseSeeder extends Seeder
                     'name' => 'John Erick G. Chavez',
                     'id_number' => '23-62569',
                     'course' => 'BSCpE',
-                    'section' => 'Ay',
+                    'section' => 'A',
                     'year_level' => '3',
                     'department' => 'CEIT',
                     'qr_raw_text' => 'JOHN ERICK G. CHAVEZ,BSCpE,,',

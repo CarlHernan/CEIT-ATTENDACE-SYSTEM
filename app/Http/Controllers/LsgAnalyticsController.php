@@ -18,7 +18,7 @@ class LsgAnalyticsController extends Controller
         $this->authorizeLsg($request->user(), $event);
 
         [$records, $summary, $filters] = $this->buildAttendanceData($request, $event);
-        $absent = $this->computeAbsent($event, $filters);
+        $absent = $this->computeAbsent($event, $filters, $request->user());
         $breakdown = $this->societyBreakdown($event, $filters);
 
         return view('lsg.analytics', [
@@ -83,9 +83,9 @@ class LsgAnalyticsController extends Controller
         return [$records, $summary, $filters];
     }
 
-    protected function computeAbsent(Event $event, array $filters)
+    protected function computeAbsent(Event $event, array $filters, $requester = null)
     {
-        $expectedIds = $this->expectedUserIds($event, $request->user());
+        $expectedIds = $this->expectedUserIds($event, $requester ?? auth()->user());
         $attendedIds = $event->attendanceRecords()->pluck('user_id')->all();
         $absentIds = array_values(array_diff($expectedIds, $attendedIds));
 

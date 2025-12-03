@@ -32,6 +32,16 @@
                 </div>
             @endif
 
+            <div class="flex items-center gap-3 text-sm">
+                @php $scope = $scope ?? 'upcoming'; @endphp
+                <a href="{{ route('events.index', ['scope' => 'upcoming']) }}" class="px-3 py-1 rounded-full border {{ $scope === 'upcoming' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 text-slate-700' }}">
+                    Upcoming
+                </a>
+                <a href="{{ route('events.index', ['scope' => 'ended']) }}" class="px-3 py-1 rounded-full border {{ $scope === 'ended' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 text-slate-700' }}">
+                    Ended
+                </a>
+            </div>
+
             <div class="grid gap-4">
                 @forelse ($events as $event)
                     <a href="{{ route('events.show', $event) }}" class="card p-5 block hover:shadow-md transition">
@@ -41,9 +51,18 @@
                                 <h3 class="text-lg font-semibold text-blue-950">{{ $event->title }}</h3>
                                 <p class="text-sm text-slate-600 mt-1 line-clamp-2">{{ $event->description }}</p>
                                 <div class="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
+                                    @php
+                                        $start = $event->start_at;
+                                        $end = $event->end_at;
+                                        $sameDay = $start && $end && $start->isSameDay($end);
+                                    @endphp
                                     <span class="inline-flex items-center gap-1">
                                         <span class="inline-block w-2 h-2 rounded-full bg-blue-700"></span>
-                                        {{ $event->start_at->format('M d, Y g:i A') }}
+                                        {{ $start?->format('M d, Y g:i A') }}
+                                        @if($end)
+                                            <span class="text-slate-400">-</span>
+                                            {{ $sameDay ? $end->format('g:i A') : $end->format('M d, Y g:i A') }}
+                                        @endif
                                     </span>
                                     @if ($event->location)
                                         <span class="inline-flex items-center gap-1">

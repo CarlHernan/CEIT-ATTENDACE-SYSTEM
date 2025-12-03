@@ -12,10 +12,20 @@ class OfficerDashboardController extends Controller
     {
         $user = $request->user();
         $societyIds = $user->societies()->pluck('societies.id');
+        $now = now();
+
+        $upcomingClause = function ($q) use ($now) {
+            $q->where(function ($w) use ($now) {
+                $w->whereNull('end_at')->where('start_at', '>=', $now);
+            })->orWhere(function ($w) use ($now) {
+                $w->whereNotNull('end_at')->where('end_at', '>=', $now);
+            });
+        };
 
         // Events they manage (their society)
         $manageEvents = Event::with('society')
             ->whereIn('society_id', $societyIds)
+            ->where($upcomingClause)
             ->orderBy('start_at', 'desc')
             ->take(6)
             ->get();
@@ -27,6 +37,7 @@ class OfficerDashboardController extends Controller
                 $q->whereNull('society_id')
                     ->orWhereHas('creator.role', fn ($r) => $r->where('slug', 'lsg_officer'));
             })
+            ->where($upcomingClause)
             ->orderBy('start_at', 'desc')
             ->take(4)
             ->get();

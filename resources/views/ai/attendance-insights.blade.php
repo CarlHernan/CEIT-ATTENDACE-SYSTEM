@@ -28,7 +28,9 @@
                             <label class="text-xs font-semibold text-blue-900">Event</label>
                             <select name="event_id" class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700 text-sm">
                                 @foreach ($events as $ev)
-                                    <option value="{{ $ev->id }}">{{ $ev->title }} ({{ $ev->start_at->format('M d, Y') }})</option>
+                                    <option value="{{ $ev->id }}" @selected(($selectedEventId ?? null) == $ev->id)>
+                                        {{ $ev->title }} ({{ $ev->start_at->format('M d, Y') }})
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -78,6 +80,7 @@
             const answerCard = document.getElementById('ai-answer');
             const answerText = document.getElementById('ai-answer-text');
 
+            // Prefill event from query (selected in blade) – just ensure select visible on load.
             modeSelect.addEventListener('change', () => {
                 if (modeSelect.value === 'event') {
                     eventSelect.classList.remove('hidden');
@@ -87,6 +90,9 @@
                     studentFields.classList.remove('hidden');
                 }
             });
+
+            // Trigger once to ensure correct visibility on load.
+            modeSelect.dispatchEvent(new Event('change'));
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();

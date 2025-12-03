@@ -65,7 +65,7 @@ class OllamaAiService
 
         $user = [
             'role' => 'user',
-            'content' => "Using only the provided JSON, write a 2-3 paragraph neutral, formal summary. Mention event name, date/time, organizer, total attendance, notable patterns by year/course/society, and late/no-timeout if significant. Do not invent data. Important: interpret attendance_mode literally; 'hybrid' here means QR + manual ID options, not virtual/remote participation. Respond in plain text sentences without bullets, tables, or bold/italics.\n\nJSON:\n".json_encode($context, JSON_PRETTY_PRINT),
+            'content' => "Using only the provided JSON, write a 2-3 paragraph neutral, formal summary. Mention event name, date/time (no need to mention ' Asia/Manila time'), organizer, total attendance, notable patterns by year/course/society, and late/no-timeout if significant. Do not invent data. No need to include the attendance mode (hybrid/qr/manual) in the summary. Respond in plain text sentences without bullets, tables, or bold/italics.\n\nJSON:\n".json_encode($context, JSON_PRETTY_PRINT),
         ];
 
         return $this->chat([$system, $user]) ?: 'AI could not generate a response. Please try again.';

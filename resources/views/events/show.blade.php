@@ -6,7 +6,18 @@
                 <h2 class="font-semibold text-xl text-blue-950 leading-tight">
                     {{ $event->title }}
                 </h2>
-                <p class="text-sm text-slate-600">{{ $event->start_at->format('M d, Y g:i A') }} @if($event->end_at) - {{ $event->end_at->format('M d, Y g:i A') }} @endif</p>
+                @php
+                    $start = $event->start_at;
+                    $end = $event->end_at;
+                    $sameDay = $start && $end && $start->isSameDay($end);
+                @endphp
+                <p class="text-sm text-slate-600">
+                    {{ $start?->format('M d, Y g:i A') }}
+                    @if($end)
+                        <span class="text-slate-400">-</span>
+                        {{ $sameDay ? $end->format('g:i A') : $end->format('M d, Y g:i A') }}
+                    @endif
+                </p>
             </div>
             <a href="{{ route('events.index') }}" class="text-sm text-blue-800 hover:text-blue-900 font-semibold">Back to events</a>
         </div>
@@ -30,7 +41,7 @@
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm text-slate-700">
                     @if ($event->location)
                         <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50">
-                            ?? <span>{{ $event->location }}</span>
+                            📍 <span>{{ $event->location }}</span>
                         </div>
                     @endif
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-900">
@@ -98,12 +109,12 @@
                             View Analytics
                         </a>
                         @endif
-+
-+                        @if (in_array($role, ['officer','lsg_officer','admin']))
-+                        <a href="{{ route('ai.insights') }}" class="inline-flex items-center px-4 py-2 bg-slate-200 text-blue-900 rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-300">
-+                            AI Attendance Q&A
-+                        </a>
-+                        @endif
+
+                        @if (in_array($role, ['officer','lsg_officer','admin']))
+                        <a href="{{ route('ai.insights', ['event_id' => $event->id]) }}" class="inline-flex items-center px-4 py-2 bg-slate-200 text-blue-900 rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-300">
+                            AI Attendance Q&A
+                        </a>
+                        @endif
                     </div>
                     @endif
 

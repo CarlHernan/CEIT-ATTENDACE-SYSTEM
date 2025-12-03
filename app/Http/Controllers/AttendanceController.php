@@ -89,6 +89,14 @@ class AttendanceController extends Controller
         $user = $request->user();
         $this->authorizeAccess($user, $event);
 
+        // Block recording if the event already ended
+        $end = $event->end_at ?? $event->start_at;
+        if ($end && now()->gt($end)) {
+            return response()->json([
+                'message' => 'Recording is closed. The event has already ended.',
+            ], 403);
+        }
+
         $data = $request->validate([
             'mode' => ['required', 'in:time_in,time_out'],
             'method' => ['required', 'in:qr,manual,hybrid'],
@@ -104,11 +112,33 @@ class AttendanceController extends Controller
             ], 404);
         }
 
-        $record = AttendanceRecord::firstOrNew([
-            'event_id' => $event->id,
-            'user_id' => $target->id,
-            'recorded_by' => $user->id,
-        ]);
+        // Single record per event/user: prevent duplicates.
+        $record = AttendanceRecord::where('event_id', $event->id)
+            ->where('user_id', $target->id)
+            ->first();
+
+        $now = Carbon::now();
+        $alreadyStatus = null;
+
+        if ($record) {
+            if ($data['mode'] === 'time_in' && $record->time_in) {
+                $alreadyStatus = 'Already timed in at '.$record->time_in->format('Y-m-d H:i:s');
+            }
+            if ($data['mode'] === 'time_out' && $record->time_out) {
+                $alreadyStatus = 'Already timed out at '.$record->time_out->format('Y-m-d H:i:s');
+            }
+
+            if ($alreadyStatus) {
+                return response()->json([
+                    'message' => $alreadyStatus,
+                ], 409);
+            }
+        } else {
+            $record = new AttendanceRecord([
+                'event_id' => $event->id,
+                'user_id' => $target->id,
+            ]);
+        }
 
         // Restrict society officers on CEIT-wide events to recording only their own society members.
         if ($user->role?->slug === 'officer' && $event->audience === 'ceit_students') {
@@ -117,8 +147,6 @@ class AttendanceController extends Controller
             abort_unless($isSameSociety, 403);
         }
 
-        $now = Carbon::now();
-
         if ($data['mode'] === 'time_in') {
             $record->time_in = $record->time_in ?: $now;
         } else {
@@ -126,6 +154,7 @@ class AttendanceController extends Controller
             $record->time_out = $record->time_out ?: $now;
         }
 
+        $record->recorded_by = $record->recorded_by ?: $user->id;
         $record->method = $data['method'];
         $record->save();
 
@@ -140,8 +169,8 @@ class AttendanceController extends Controller
             ],
             'record' => [
                 'id' => $record->id,
-                'time_in' => optional($record->time_in)->toDateTimeString(),
-                'time_out' => optional($record->time_out)->toDateTimeString(),
+                'time_in' => optional(optional($record->time_in)->timezone(config('app.timezone')))->toDateTimeString(),
+                'time_out' => optional(optional($record->time_out)->timezone(config('app.timezone')))->toDateTimeString(),
                 'method' => $record->method,
             ],
             'recorded_by' => $user->name,

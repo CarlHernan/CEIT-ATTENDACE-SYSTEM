@@ -15,6 +15,8 @@ class EventController extends Controller
     {
         $user = $request->user();
         $role = $user->role?->slug;
+        $scope = $request->input('scope', 'upcoming');
+        $now = now();
 
         $query = Event::with(['society', 'creator.role'])
             ->orderBy('start_at', 'desc');
@@ -37,9 +39,25 @@ class EventController extends Controller
             $query->visibleToStudent($user);
         }
 
+        $query->where(function ($q) use ($scope, $now) {
+            if ($scope === 'ended') {
+                $q->where(function ($w) use ($now) {
+                    $w->whereNotNull('end_at')->where('end_at', '<', $now);
+                })->orWhere(function ($w) use ($now) {
+                    $w->whereNull('end_at')->where('start_at', '<', $now);
+                });
+            } else {
+                $q->where(function ($w) use ($now) {
+                    $w->whereNull('end_at')->where('start_at', '>=', $now);
+                })->orWhere(function ($w) use ($now) {
+                    $w->whereNotNull('end_at')->where('end_at', '>=', $now);
+                });
+            }
+        });
+
         $events = $query->paginate(10);
 
-        return view('events.index', compact('events'));
+        return view('events.index', compact('events', 'scope'));
     }
 
     public function create(Request $request): View
@@ -199,6 +217,9 @@ class EventController extends Controller
             $isCeitWideLsgEvent = in_array($event->audience, ['ceit_students', 'all_officers'], true)
                 && $event->creator?->role?->slug === 'lsg_officer';
             abort_unless($isOwnSocietyEvent || $isCeitWideLsgEvent, 403);
+        } elseif ($role === 'student') {
+            $visible = Event::visibleToStudent($user)->where('id', $event->id)->exists();
+            abort_unless($visible, 403);
         }
 
         return view('events.show', compact('event'));

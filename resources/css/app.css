@@ -11,10 +11,18 @@
     --color-psits-100: #dfe8fb;
     --color-ink-900: #0f172a;
     --color-ink-700: #1f2937;
-    --color-surface: #f6f8fb;
+    --color-ink-500: #475569;
+    --color-surface: #eef3fb;
+    --color-surface-200: #e5ebf7;
+    --color-navy-950: #0a1738;
+    --color-navy-900: #0c2452;
+    --color-navy-800: #12356e;
+    --color-navy-700: #194487;
+    --color-border-soft: #e3e9f4;
     --radius-card: 12px;
     --radius-pill: 999px;
     --shadow-card: 0 14px 40px -24px rgba(10, 26, 58, 0.5);
+    --shadow-card-strong: 0 20px 50px -32px rgba(12, 36, 96, 0.4);
 }
 
 @layer base {

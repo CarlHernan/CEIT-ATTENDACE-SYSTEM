@@ -48,6 +48,10 @@ new class extends Component
                         <x-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')" wire:navigate>
                             {{ __('Events') }}
                         </x-nav-link>
+                    @else
+                        <x-nav-link :href="route('events.upcoming')" :active="request()->routeIs('events.*')" wire:navigate>
+                            {{ __('Events') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -102,6 +106,10 @@ new class extends Component
             </x-responsive-nav-link>
             @if (in_array(auth()->user()->role?->slug, ['officer','lsg_officer','admin']))
                 <x-responsive-nav-link :href="route('events.index')" :active="request()->routeIs('events.*')" wire:navigate>
+                    {{ __('Events') }}
+                </x-responsive-nav-link>
+            @else
+                <x-responsive-nav-link :href="route('events.upcoming')" :active="request()->routeIs('events.*')" wire:navigate>
                     {{ __('Events') }}
                 </x-responsive-nav-link>
             @endif

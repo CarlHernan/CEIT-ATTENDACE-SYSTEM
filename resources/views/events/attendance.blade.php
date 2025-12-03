@@ -163,8 +163,8 @@
                                 <tr data-student="{{ $record->user->id }}">
                                     <td class="py-2 pr-4 text-blue-950 font-semibold student-name">{{ $record->user->name }}</td>
                                     <td class="py-2 pr-4 text-slate-700 student-course">{{ $record->user->course }} / {{ $record->user->year_level }}</td>
-                                    <td class="py-2 pr-4 text-slate-700 student-time-in">{{ optional($record->time_in)->format('M d, Y g:i A') ?: '—' }}</td>
-                                    <td class="py-2 pr-4 text-slate-700 student-time-out">{{ optional($record->time_out)->format('M d, Y g:i A') ?: '—' }}</td>
+                                    <td class="py-2 pr-4 text-slate-700 student-time-in">{{ optional(optional($record->time_in)->timezone(config('app.timezone')))->format('M d, Y g:i A') ?: '-' }}</td>
+                                    <td class="py-2 pr-4 text-slate-700 student-time-out">{{ optional(optional($record->time_out)->timezone(config('app.timezone')))->format('M d, Y g:i A') ?: '-' }}</td>
                                     <td class="py-2 pr-4 capitalize text-slate-700 student-method">{{ $record->method }}</td>
                                     <td class="py-2 pr-4 text-slate-700 student-recorder">{{ $record->recorder->name }}</td>
                                 </tr>
@@ -264,6 +264,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': csrf,
                         },
                         body: JSON.stringify(payload),

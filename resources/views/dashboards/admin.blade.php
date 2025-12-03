@@ -1,25 +1,29 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
+                CEIT
+            </div>
             <div>
-                <p class="text-xs font-semibold uppercase text-blue-800">Admin</p>
-                <h2 class="font-semibold text-xl text-blue-950 leading-tight">
+                <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('Admin Dashboard') }}
                 </h2>
+                <p class="text-sm text-slate-600">System administration and controls</p>
             </div>
-            <span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">Control</span>
         </div>
     </x-slot>
 
     <div class="py-10">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-6 sm:grid-cols-2">
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold text-blue-900">Manage societies</h3>
-                <p class="mt-2 text-sm text-slate-600">Maintain society records and officer access.</p>
-            </div>
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold text-blue-900">System settings</h3>
-                <p class="mt-2 text-sm text-slate-600">Configure integrations, AI, and automation defaults.</p>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div class="grid gap-4 md:grid-cols-2">
+                <div class="rounded-2xl bg-[var(--color-navy-900)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                    <p class="text-sm font-semibold text-white">Manage societies</p>
+                    <p class="mt-2 text-sm text-white/80">Maintain society records and officer access.</p>
+                </div>
+                <div class="rounded-2xl bg-[var(--color-navy-900)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                    <p class="text-sm font-semibold text-white">System settings</p>
+                    <p class="mt-2 text-sm text-white/80">Configure integrations, AI, and automation defaults.</p>
+                </div>
             </div>
         </div>
     </div>
