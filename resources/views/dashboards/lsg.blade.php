@@ -4,9 +4,7 @@
     @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
-                CEIT
-            </div>
+            <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-12 w-12 rounded-full object-cover">
             <div>
                 <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('LSG Dashboard') }}
@@ -96,8 +94,14 @@
                             </div>
                         </a>
                     @empty
-                        <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 text-sm text-slate-600 shadow-[var(--shadow-card-strong)]">
-                            No LSG events yet.
+                        <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
+                                <i class="ri-calendar-event-line text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-[var(--color-ink-900)]">No LSG events yet</p>
+                                <p class="text-slate-500">Create a CEIT-wide or officer event.</p>
+                            </div>
                         </div>
                     @endforelse
                 </div>

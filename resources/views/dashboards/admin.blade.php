@@ -1,9 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
-                CEIT
-            </div>
+            <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-12 w-12 rounded-full object-cover">
             <div>
                 <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('Admin Dashboard') }}

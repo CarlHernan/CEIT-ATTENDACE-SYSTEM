@@ -4,9 +4,7 @@
     @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
-                CEIT
-            </div>
+            <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-12 w-12 rounded-full object-cover">
             <div>
                 <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('Student Dashboard') }}
@@ -46,14 +44,12 @@
                 </div>
                 <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-800)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
                     <div class="flex items-start gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-                            <svg class="h-5 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25v3.75m0-6.75h.008v.008H11.25V8.25zm.75 12.25a8.25 8.25 0 100-16.5 8.25 8.25 0 000 16.5z" />
-                            </svg>
+                        <div class="flex h-10 w-12 items-center justify-center rounded-full bg-white/10">
+                            <i class="ri-information-line text-xl text-white"></i>
                         </div>
                         <div>
-                            <p class="text-lg font-semibold">Stay updated</p>
-                            <p class="text-sm text-white/80">Check in early to avoid long queues. Attendance closes at the event's end time.</p>
+                            <p class="text-sm font-semibold text-white/80">Stay updated</p>
+                            <p class="text-sm text-white/80 mt-5">Check in early to avoid long queues. Attendance closes at the event's end time.</p>
                         </div>
                     </div>
                 </div>
@@ -102,8 +98,14 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 text-sm text-slate-600 shadow-[var(--shadow-card-strong)]">
-                                No events yet for your society.
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
+                                    <i class="ri-calendar-event-line text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-[var(--color-ink-900)]">No society events yet</p>
+                                    <p class="text-slate-500">Check back soon for upcoming sessions.</p>
+                                </div>
                             </div>
                         @endforelse
                     </div>
@@ -151,8 +153,14 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 text-sm text-slate-600 shadow-[var(--shadow-card-strong)]">
-                                No upcoming CEIT events.
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
+                                    <i class="ri-megaphone-line text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-[var(--color-ink-900)]">No CEIT events posted</p>
+                                    <p class="text-slate-500">Stay tuned for new announcements.</p>
+                                </div>
                             </div>
                         @endforelse
                     </div>
