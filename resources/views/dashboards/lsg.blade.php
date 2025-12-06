@@ -1,4 +1,7 @@
 <x-app-layout>
+    @once
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
@@ -27,36 +30,27 @@
     <div class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <a href="{{ route('events.create') }}" class="rounded-2xl bg-[var(--color-navy-900)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.create') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
                     <div class="flex flex-col gap-3">
-                        <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-                        </svg>
+                        <i class="ri-add-circle-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Create CEIT/LSG Event</p>
                     </div>
                 </a>
-                <a href="{{ route('events.index') }}" class="rounded-2xl bg-[var(--color-navy-900)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
                     <div class="flex flex-col gap-3">
-                        <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h8m-8 4h5m-9 6h14a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
+                        <i class="ri-calendar-event-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Manage Events</p>
                     </div>
                 </a>
-                <a href="{{ route('events.index') }}" class="rounded-2xl bg-[var(--color-navy-900)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
                     <div class="flex flex-col gap-3">
-                        <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 6-6" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h.01" />
-                        </svg>
+                        <i class="ri-bar-chart-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Analytics</p>
                     </div>
                 </a>
-                <a href="{{ route('ai.insights') }}" class="rounded-2xl bg-[var(--color-navy-900)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('ai.insights') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
                     <div class="flex flex-col gap-3">
-                        <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 4.036a2.25 2.25 0 014.374 0l.19.77a2.25 2.25 0 001.542 1.63l.758.226a2.25 2.25 0 011.39 3.084l-.312.72a2.25 2.25 0 000 1.72l.312.72a2.25 2.25 0 01-1.39 3.084l-.758.226a2.25 2.25 0 00-1.542 1.63l-.19.77a2.25 2.25 0 01-4.374 0l-.19-.77a2.25 2.25 0 00-1.542-1.63l-.758-.226a2.25 2.25 0 01-1.39-3.084l.312-.72a2.25 2.25 0 000-1.72l-.312-.72a2.25 2.25 0 011.39-3.084l.758-.226a2.25 2.25 0 001.542-1.63l.19-.77z" />
-                        </svg>
+                        <i class="ri-robot-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">AI Attendance Q&amp;A</p>
                     </div>
                 </a>
@@ -76,9 +70,7 @@
                                     {{ $ev->scope_label }}
                                 </span>
                                 <div class="flex items-center gap-2 text-sm text-slate-500">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5h10.5a2.25 2.25 0 012.25 2.25v8.25A2.25 2.25 0 0117.25 20.25H6.75A2.25 2.25 0 014.5 18V9.75A2.25 2.25 0 016.75 7.5zm0 0V5.25A1.5 1.5 0 018.25 3.75h.75a1.5 1.5 0 011.5 1.5V7.5m-3.75 0h6.75m0-2.25A1.5 1.5 0 0115.75 3.75h.75a1.5 1.5 0 011.5 1.5V7.5" />
-                                    </svg>
+                                    <i class="ri-calendar-event-line text-base"></i>
                                     <span>
                                         {{ $ev->start_at?->format('M j, Y g:i A') }}
                                         @if($ev->end_at)

@@ -1,4 +1,7 @@
 <x-app-layout>
+    @once
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-navy-900)] text-white text-lg font-semibold">
@@ -27,21 +30,21 @@
     <div class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-2xl bg-[var(--color-navy-900)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
                     <p class="text-sm font-semibold text-white/80">Society events attended</p>
                     <div class="mt-3 flex items-baseline gap-2">
                         <span class="text-4xl font-semibold">{{ $societyEventsAttended }}</span>
                     </div>
                     <p class="text-sm text-white/70 mt-1">This semester</p>
                 </div>
-                <div class="rounded-2xl bg-[var(--color-navy-900)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
                     <p class="text-sm font-semibold text-white/80">CEIT events attended</p>
                     <div class="mt-3 flex items-baseline gap-2">
                         <span class="text-4xl font-semibold">{{ $ceitEventsAttended }}</span>
                     </div>
                     <p class="text-sm text-white/70 mt-1">This semester</p>
                 </div>
-                <div class="rounded-2xl bg-[var(--color-navy-800)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-800)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
                     <div class="flex items-start gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
                             <svg class="h-5 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -68,9 +71,7 @@
                                         {{ $ev->scope_label }}
                                     </span>
                                     <div class="flex items-center gap-2 text-sm text-slate-500">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5h10.5a2.25 2.25 0 012.25 2.25v8.25A2.25 2.25 0 0117.25 20.25H6.75A2.25 2.25 0 014.5 18V9.75A2.25 2.25 0 016.75 7.5zm0 0V5.25A1.5 1.5 0 018.25 3.75h.75a1.5 1.5 0 011.5 1.5V7.5m-3.75 0h6.75m0-2.25A1.5 1.5 0 0115.75 3.75h.75a1.5 1.5 0 011.5 1.5V7.5" />
-                                        </svg>
+                                        <i class="ri-calendar-event-line text-base"></i>
                                         @php
                                             $start = $ev->start_at;
                                             $end = $ev->end_at;
@@ -119,9 +120,7 @@
                                         {{ $ev->scope_label }}
                                     </span>
                                     <div class="flex items-center gap-2 text-sm text-slate-500">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5h10.5a2.25 2.25 0 012.25 2.25v8.25A2.25 2.25 0 0117.25 20.25H6.75A2.25 2.25 0 014.5 18V9.75A2.25 2.25 0 016.75 7.5zm0 0V5.25A1.5 1.5 0 018.25 3.75h.75a1.5 1.5 0 011.5 1.5V7.5m-3.75 0h6.75m0-2.25A1.5 1.5 0 0115.75 3.75h.75a1.5 1.5 0 011.5 1.5V7.5" />
-                                        </svg>
+                                        <i class="ri-calendar-event-line text-base"></i>
                                         @php
                                             $start = $ev->start_at;
                                             $end = $ev->end_at;
