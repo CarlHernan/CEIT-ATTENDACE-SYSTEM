@@ -25,7 +25,7 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="card p-6 space-y-6">
+            <div class="card p-6 space-y-6 card-animate">
                 @php
                     $audienceLabels = [
                         'society_members' => 'Society members',

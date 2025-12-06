@@ -44,7 +44,7 @@
 
             <div class="grid gap-4">
                 @forelse ($events as $event)
-                    <a href="{{ route('events.show', $event) }}" class="card p-5 block hover:shadow-md transition">
+                    <a href="{{ route('events.show', $event) }}" class="card p-5 block hover:shadow-md transition card-animate">
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <p class="text-xs font-semibold text-blue-700 uppercase">{{ $event->scope_label }}</p>
@@ -94,7 +94,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="card p-6 text-slate-600 text-sm">
+                    <div class="card p-6 text-slate-600 text-sm card-animate">
                         No events yet.
                     </div>
                 @endforelse

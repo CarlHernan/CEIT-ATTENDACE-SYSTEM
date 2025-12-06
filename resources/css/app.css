@@ -48,4 +48,26 @@
         box-shadow: var(--shadow-card);
         border: 1px solid #e5e7eb;
     }
+
+    .card-animate {
+        opacity: 0;
+        transform: translateY(12px);
+        animation: card-fade-up 500ms ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 80ms; }
+    .delay-2 { animation-delay: 140ms; }
+    .delay-3 { animation-delay: 200ms; }
+    .delay-4 { animation-delay: 260ms; }
+}
+
+@keyframes card-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

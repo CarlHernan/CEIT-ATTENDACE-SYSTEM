@@ -34,7 +34,7 @@ new class extends Component
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route($dashboardRoute) }}" wire:navigate class="inline-flex items-center gap-2">
-                        <x-application-logo class="block h-8 w-auto fill-current text-[var(--color-psits-800)]" />
+                        <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-9 w-9 rounded-full object-cover">
                         <span class="text-sm font-semibold text-blue-900 hidden sm:inline">CEIT Attendance</span>
                     </a>
                 </div>

@@ -24,16 +24,16 @@
 
             <div class="min-h-screen flex flex-col sm:justify-center items-center px-4 py-10 relative">
                 <div class="mb-6 text-center">
-                    <a href="/" wire:navigate class="inline-flex items-center gap-3">
-                        <x-application-logo class="w-12 h-12 fill-current text-[var(--color-psits-800)]" />
+                    <a href="/" wire:navigate class="inline-flex items-center gap-4">
+                        <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="w-14 h-14 rounded-full object-cover">
                         <div class="text-left">
-                            <p class="text-xs uppercase tracking-wide text-blue-900 font-semibold">CEIT</p>
-                            <p class="text-lg font-semibold text-blue-950">Digital Attendance</p>
+                            <p class="text-sm uppercase tracking-wide text-blue-900 font-semibold">CEIT</p>
+                            <p class="text-2xl font-semibold text-blue-950 leading-tight">Digital Attendance</p>
                         </div>
                     </a>
                 </div>
 
-                <div class="w-full sm:max-w-xl mt-6 px-6 py-6 bg-white shadow-lg overflow-hidden rounded-2xl border border-slate-100">
+                <div class="w-full sm:max-w-xl mt-6 px-6 py-6 bg-white shadow-lg overflow-hidden rounded-2xl border border-slate-100 card-animate">
                     {{ $slot }}
                 </div>
             </div>

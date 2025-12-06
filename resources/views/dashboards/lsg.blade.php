@@ -4,7 +4,6 @@
     @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-12 w-12 rounded-full object-cover">
             <div>
                 <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('LSG Dashboard') }}
@@ -28,25 +27,25 @@
     <div class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <a href="{{ route('events.create') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.create') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5 card-animate">
                     <div class="flex flex-col gap-3">
                         <i class="ri-add-circle-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Create CEIT/LSG Event</p>
                     </div>
                 </a>
-                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5 card-animate delay-1">
                     <div class="flex flex-col gap-3">
                         <i class="ri-calendar-event-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Manage Events</p>
                     </div>
                 </a>
-                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5 card-animate delay-2">
                     <div class="flex flex-col gap-3">
                         <i class="ri-bar-chart-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">Analytics</p>
                     </div>
                 </a>
-                <a href="{{ route('ai.insights') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                <a href="{{ route('ai.insights') }}" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5 card-animate delay-3">
                     <div class="flex flex-col gap-3">
                         <i class="ri-robot-line text-3xl"></i>
                         <p class="text-sm font-semibold text-white">AI Attendance Q&amp;A</p>
@@ -56,13 +55,13 @@
 
             <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-6 shadow-[var(--shadow-card-strong)]">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)]">LSG-Created Events</h3>
-                    <span class="text-xs text-slate-500">Recent</span>
+                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)] card-animate">LSG-Created Events</h3>
+                    <span class="text-xs text-slate-500 card-animate delay-1">Recent</span>
                 </div>
                 <div class="mt-4 grid gap-4 md:grid-cols-1">
                     @forelse ($lsgEvents as $ev)
                         @php $audLabel = $audienceLabels[$ev->audience] ?? ucwords(str_replace('_',' ', $ev->audience)); @endphp
-                        <a href="{{ route('events.show', $ev) }}" class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5">
+                        <a href="{{ route('events.show', $ev) }}" class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] block transition transform hover:-translate-y-0.5 card-animate">
                             <div class="flex items-start justify-between gap-3">
                                 <span class="inline-flex items-center rounded-full bg-[var(--color-surface-200)] px-3 py-1 text-xs font-semibold text-[var(--color-navy-900)]">
                                     {{ $ev->scope_label }}
@@ -94,7 +93,7 @@
                             </div>
                         </a>
                     @empty
-                        <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                        <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px] card-animate">
                             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
                                 <i class="ri-calendar-event-line text-xl"></i>
                             </div>

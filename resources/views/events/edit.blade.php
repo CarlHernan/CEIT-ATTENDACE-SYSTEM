@@ -13,7 +13,7 @@
 
     <div class="py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="card p-6">
+            <div class="card p-6 card-animate">
                 <form method="POST" action="{{ route('events.update', $event) }}" class="space-y-4">
                     @csrf
                     @method('PUT')

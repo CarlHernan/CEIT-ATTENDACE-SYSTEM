@@ -4,7 +4,6 @@
     @endonce
     <x-slot name="header">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('images/ceit-logo.png') }}" alt="CEIT logo" class="h-12 w-12 rounded-full object-cover">
             <div>
                 <h2 class="text-2xl font-semibold text-[var(--color-ink-900)] leading-tight">
                     {{ __('Student Dashboard') }}
@@ -28,21 +27,21 @@
     <div class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate">
                     <p class="text-sm font-semibold text-white/80">Society events attended</p>
                     <div class="mt-3 flex items-baseline gap-2">
                         <span class="text-4xl font-semibold">{{ $societyEventsAttended }}</span>
                     </div>
                     <p class="text-sm text-white/70 mt-1">This semester</p>
                 </div>
-                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-1">
                     <p class="text-sm font-semibold text-white/80">CEIT events attended</p>
                     <div class="mt-3 flex items-baseline gap-2">
                         <span class="text-4xl font-semibold">{{ $ceitEventsAttended }}</span>
                     </div>
                     <p class="text-sm text-white/70 mt-1">This semester</p>
                 </div>
-                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-800)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)]">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-800)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-2">
                     <div class="flex items-start gap-3">
                         <div class="flex h-10 w-12 items-center justify-center rounded-full bg-white/10">
                             <i class="ri-information-line text-xl text-white"></i>
@@ -57,11 +56,11 @@
 
             <div class="grid gap-6 lg:grid-cols-2">
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)]">Your Society Events</h3>
+                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)] card-animate">Your Society Events</h3>
                     <div class="space-y-4">
                         @forelse ($societyEvents as $ev)
                             @php $audLabel = $audienceLabels[$ev->audience] ?? ucwords(str_replace('_',' ', $ev->audience)); @endphp
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)]">
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] card-animate">
                                 <div class="flex items-start justify-between gap-3">
                                     <span class="inline-flex items-center rounded-full bg-[var(--color-surface-200)] px-3 py-1 text-xs font-semibold text-[var(--color-navy-900)]">
                                         {{ $ev->scope_label }}
@@ -98,7 +97,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px] card-animate">
                                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
                                     <i class="ri-calendar-event-line text-xl"></i>
                                 </div>
@@ -112,11 +111,11 @@
                 </div>
 
                 <div class="space-y-4">
-                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)]">CEIT Events</h3>
+                    <h3 class="text-xl font-semibold text-[var(--color-ink-900)] card-animate">CEIT Events</h3>
                     <div class="space-y-4">
                         @forelse ($ceitEvents as $ev)
                             @php $audLabel = $audienceLabels[$ev->audience] ?? ucwords(str_replace('_',' ', $ev->audience)); @endphp
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)]">
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] card-animate delay-1">
                                 <div class="flex items-start justify-between gap-3">
                                     <span class="inline-flex items-center rounded-full bg-[var(--color-surface-200)] px-3 py-1 text-xs font-semibold text-[var(--color-navy-900)]">
                                         {{ $ev->scope_label }}
@@ -153,7 +152,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px]">
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center gap-3 text-center text-sm text-slate-600 min-h-[198px] card-animate delay-1">
                                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-200)] text-[var(--color-navy-900)]">
                                     <i class="ri-megaphone-line text-xl"></i>
                                 </div>
