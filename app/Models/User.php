@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -53,12 +54,12 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'is_society_officer' => 'boolean',
-        'is_lsg_officer' => 'boolean',
-    ];
-}
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_society_officer' => 'boolean',
+            'is_lsg_officer' => 'boolean',
+        ];
+    }
 
     /**
      * Get the user's initials

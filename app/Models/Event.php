@@ -19,10 +19,16 @@ class Event extends Model
         'end_at',
         'location',
         'attendance_mode',
+        'late_threshold_minutes',
         'audience',
         'audience_notes',
-        'late_threshold_minutes',
         'status',
+        'type',
+        'template',
+        'audience_years',
+        'require_timeout',
+        'visibility',
+        'is_ceit_wide',
         'society_id',
         'created_by',
     ];
@@ -30,6 +36,8 @@ class Event extends Model
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'require_timeout' => 'boolean',
+        'is_ceit_wide' => 'boolean',
     ];
 
     public function society(): BelongsTo

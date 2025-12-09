@@ -62,7 +62,7 @@ class AiController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'mode' => ['required', Rule::in(['event', 'student'])],
+            'mode' => ['required', Rule::in(['event', 'student', 'freeform'])],
             'event_id' => ['nullable', 'integer'],
             'student_id' => ['nullable', 'string', 'max:50'],
             'question' => ['required', 'string', 'max:800'],
@@ -82,6 +82,90 @@ class AiController extends Controller
                 $answer = $this->ai->answerAttendanceQuestion($data['question'], $context, 'student');
             }
             return response()->json(['answer' => $answer]);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function chat(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'mode' => ['required', Rule::in(['event', 'student', 'freeform'])],
+            'event_id' => ['nullable', 'integer'],
+            'student_id' => ['nullable', 'string', 'max:50'],
+            'question' => ['required', 'string', 'max:800'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'reset' => ['nullable', 'boolean'],
+        ]);
+
+        // Conditional requirements to avoid 422 on freeform
+        $request->validate([
+            'event_id' => [Rule::requiredIf($data['mode'] === 'event'), 'nullable', 'integer'],
+            'student_id' => [Rule::requiredIf($data['mode'] === 'student'), 'nullable', 'string', 'max:50'],
+        ]);
+
+        $sessionKey = null;
+        $context = [];
+
+        try {
+            if ($data['mode'] === 'event') {
+                $event = Event::findOrFail($data['event_id']);
+                $this->authorizeEventAccess($user, $event);
+                $context = $this->buildEventContext($event);
+                $sessionKey = 'ai_chat.event.'.$event->id;
+            } elseif ($data['mode'] === 'student') {
+                $student = User::where('id_number', $data['student_id'])->firstOrFail();
+                $context = $this->buildStudentContext($user, $student, $data['start_date'] ?? null, $data['end_date'] ?? null);
+                $sessionKey = 'ai_chat.student.'.$student->id;
+            } else {
+                // freeform
+                $sessionKey = 'ai_chat.freeform';
+            }
+
+            if ($sessionKey && $request->boolean('reset')) {
+                session()->forget($sessionKey);
+            }
+
+            $history = $sessionKey ? session($sessionKey, []) : [];
+            $system = [
+                'role' => 'system',
+                'content' => $data['mode'] === 'freeform'
+                    ? 'You are a helpful assistant. Keep replies concise and in plain text (no bullets, no tables, no bold/italics).'
+                    : 'You are an assistant that answers questions about CEIT attendance using only the provided JSON context. Keep replies concise and in plain text (no bullets, no tables, no bold/italics). Always use the latest context supplied with each user turn; do not rely on older context if it conflicts.',
+            ];
+
+            $messages = [$system];
+            foreach ($history as $msg) {
+                $messages[] = $msg;
+            }
+            if ($data['mode'] === 'freeform') {
+                $messages[] = [
+                    'role' => 'user',
+                    'content' => $data['question'],
+                ];
+            } else {
+                $messages[] = [
+                    'role' => 'user',
+                    'content' => "Fresh context (re-fetched this turn):\n".json_encode($context, JSON_PRETTY_PRINT)."\nUser question: ".$data['question'],
+                ];
+            }
+
+            $answer = $this->ai->chat($messages);
+
+            // Store trimmed history (last 12 messages max)
+            $history[] = ['role' => 'user', 'content' => $data['question']];
+            $history[] = ['role' => 'assistant', 'content' => $answer];
+            $history = array_slice($history, -12);
+            if ($sessionKey) {
+                session([$sessionKey => $history]);
+            }
+
+            return response()->json([
+                'answer' => $answer,
+                'history' => $history,
+            ]);
         } catch (\Throwable $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }

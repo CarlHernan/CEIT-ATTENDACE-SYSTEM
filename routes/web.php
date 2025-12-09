@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('events/{event}/ai-summary', [AiController::class, 'generateSummary'])->name('events.ai.summary')->middleware('role:officer,lsg_officer,admin');
         Route::get('ai/attendance-insights', [AiController::class, 'insightsPage'])->name('ai.insights')->middleware('role:officer,lsg_officer,admin');
         Route::post('ai/attendance-question', [AiController::class, 'answerQuestion'])->name('ai.insights.ask')->middleware('role:officer,lsg_officer,admin');
+        Route::post('ai/attendance-chat', [AiController::class, 'chat'])->name('ai.insights.chat')->middleware('role:officer,lsg_officer,admin');
     });
 });
 
