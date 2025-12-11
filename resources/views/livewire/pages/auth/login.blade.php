@@ -106,6 +106,13 @@ new #[Layout('layouts.guest')] class extends Component
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    <!-- Session Error -->
+    @if (session('error'))
+        <div class="mb-4 font-medium text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form wire:submit="login" class="space-y-5">
         <!-- Email Address -->
         <div>
