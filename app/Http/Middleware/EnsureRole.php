@@ -17,8 +17,14 @@ class EnsureRole
     {
         $user = $request->user();
 
+        // If no user or user doesn't have the required role, redirect to login
         if (! $user || ! $user->role?->slug || ! in_array($user->role->slug, $roles, true)) {
-            abort(403);
+            // Log out the user and redirect to login
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->with('error', 'You do not have permission to access that page.');
         }
 
         return $next($request);
