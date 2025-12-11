@@ -174,7 +174,9 @@ class AttendanceApiController extends Controller
         }
 
         if ($role === 'lsg_officer') {
-            return in_array($event->type, ['ceit', 'lsg'], true) || (bool) $event->is_ceit_wide;
+            return in_array($event->type, ['ceit', 'lsg'], true)
+                || (bool) $event->is_ceit_wide
+                || $event->society_id === null;
         }
 
         return false;
