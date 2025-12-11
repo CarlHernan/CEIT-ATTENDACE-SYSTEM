@@ -30,6 +30,12 @@ class OfficerDashboardController extends Controller
             ->take(6)
             ->get();
 
+        $latestAttendanceEvent = Event::with('society')
+            ->whereIn('society_id', $societyIds)
+            ->where($upcomingClause)
+            ->orderBy('start_at', 'desc')
+            ->first();
+
         // CEIT-wide awareness (LSG-created ceit_students events)
         $ceitAwareness = Event::with(['society', 'creator.role'])
             ->where('audience', 'ceit_students')
@@ -42,6 +48,6 @@ class OfficerDashboardController extends Controller
             ->take(4)
             ->get();
 
-        return view('dashboards.officer', compact('manageEvents', 'ceitAwareness'));
+        return view('dashboards.officer', compact('manageEvents', 'ceitAwareness', 'latestAttendanceEvent'));
     }
 }
