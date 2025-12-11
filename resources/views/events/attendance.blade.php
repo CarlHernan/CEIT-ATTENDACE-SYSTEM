@@ -381,6 +381,42 @@
                 });
             }
 
+            // Stop camera when leaving the page (traditional navigation)
+            window.addEventListener('beforeunload', () => {
+                if (scannerActive) {
+                    stopScanner();
+                }
+            });
+
+            // Stop camera when navigating away (for SPAs or quick navigation)
+            window.addEventListener('pagehide', () => {
+                if (scannerActive) {
+                    stopScanner();
+                }
+            });
+
+            // Stop camera when navigating away using Livewire wire:navigate
+            document.addEventListener('livewire:navigating', () => {
+                if (scannerActive) {
+                    stopScanner();
+                }
+            });
+
+            // Also listen for link clicks with wire:navigate to ensure immediate cleanup
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a[wire\\:navigate]');
+                if (link && scannerActive) {
+                    stopScanner();
+                }
+            }, true);
+
+            // Stop camera when tab becomes hidden
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && scannerActive) {
+                    stopScanner();
+                }
+            });
+
             // Auto-start on load
             startScanner();
         });
