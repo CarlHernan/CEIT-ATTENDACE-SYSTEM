@@ -39,21 +39,29 @@ class EventController extends Controller
             $query->visibleToStudent($user);
         }
 
-        $query->where(function ($q) use ($scope, $now) {
-            if ($scope === 'ended') {
-                $q->where(function ($w) use ($now) {
-                    $w->whereNotNull('end_at')->where('end_at', '<', $now);
-                })->orWhere(function ($w) use ($now) {
-                    $w->whereNull('end_at')->where('start_at', '<', $now);
+        // Filter by scope
+        if ($scope === 'cancelled') {
+            $query->where('status', 'cancelled');
+        } elseif ($scope === 'ended') {
+            $query->where('status', '!=', 'cancelled')
+                ->where(function ($q) use ($now) {
+                    $q->where(function ($w) use ($now) {
+                        $w->whereNotNull('end_at')->where('end_at', '<', $now);
+                    })->orWhere(function ($w) use ($now) {
+                        $w->whereNull('end_at')->where('start_at', '<', $now);
+                    });
                 });
-            } else {
-                $q->where(function ($w) use ($now) {
-                    $w->whereNull('end_at')->where('start_at', '>=', $now);
-                })->orWhere(function ($w) use ($now) {
-                    $w->whereNotNull('end_at')->where('end_at', '>=', $now);
+        } else {
+            // upcoming - exclude cancelled
+            $query->where('status', '!=', 'cancelled')
+                ->where(function ($q) use ($now) {
+                    $q->where(function ($w) use ($now) {
+                        $w->whereNull('end_at')->where('start_at', '>=', $now);
+                    })->orWhere(function ($w) use ($now) {
+                        $w->whereNotNull('end_at')->where('end_at', '>=', $now);
+                    });
                 });
-            }
-        });
+        }
 
         $events = $query->paginate(10);
 
@@ -202,6 +210,16 @@ class EventController extends Controller
         $event->update(['status' => 'cancelled']);
 
         return redirect()->route('events.show', $event)->with('status', 'Event cancelled.');
+    }
+
+    public function destroy(Request $request, Event $event): RedirectResponse
+    {
+        $user = $request->user();
+        $this->authorizeAccess($user, $event);
+
+        $event->delete();
+
+        return redirect()->route('events.index')->with('status', 'Event deleted successfully.');
     }
 
     public function show(Request $request, Event $event): View

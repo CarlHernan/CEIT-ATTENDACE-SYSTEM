@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('events/{event}/edit', [EventController::class, 'edit'])->name('events.edit')->middleware('role:officer,lsg_officer,admin');
         Route::put('events/{event}', [EventController::class, 'update'])->name('events.update')->middleware('role:officer,lsg_officer,admin');
         Route::patch('events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel')->middleware('role:officer,lsg_officer,admin');
+        Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy')->middleware('role:officer,lsg_officer,admin');
         Route::get('events/{event}/attendance', [AttendanceController::class, 'show'])->name('events.attendance');
         Route::get('events/{event}/attendance/export', [AttendanceController::class, 'export'])->name('events.attendance.export')->middleware('role:officer,lsg_officer,admin');
         Route::post('events/{event}/attendance', [AttendanceController::class, 'record'])->name('events.attendance.record')->middleware('role:officer,lsg_officer,admin');

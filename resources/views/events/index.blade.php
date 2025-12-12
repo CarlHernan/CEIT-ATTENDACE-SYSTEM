@@ -40,6 +40,9 @@
                 <a href="{{ route('events.index', ['scope' => 'ended']) }}" class="px-3 py-1 rounded-full border {{ $scope === 'ended' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-200 text-slate-700' }}">
                     Ended
                 </a>
+                <a href="{{ route('events.index', ['scope' => 'cancelled']) }}" class="px-3 py-1 rounded-full border {{ $scope === 'cancelled' ? 'bg-amber-500 text-white border-amber-500' : 'border-slate-200 text-slate-700' }}">
+                    Cancelled
+                </a>
             </div>
 
             <div class="grid gap-4">
