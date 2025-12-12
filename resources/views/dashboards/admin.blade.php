@@ -16,7 +16,7 @@
             {{-- Key Metrics Top Row --}}
             <div class="grid gap-4 md:grid-cols-4">
                 {{-- Total Users --}}
-                <div class="rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate">
+                <button type="button" x-data="" x-on:click="$dispatch('open-modal', 'all-users-modal')" class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate transition transform hover:-translate-y-0.5 hover:shadow-lg text-left w-full">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-white/80">Total Users</p>
@@ -29,10 +29,10 @@
                             </svg>
                         </div>
                     </div>
-                </div>
+                </button>
 
                 {{-- Attendance Rate --}}
-                <div class="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-1">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-1">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-white/80">Attendance Rate</p>
@@ -48,7 +48,7 @@
                 </div>
 
                 {{-- Events This Month --}}
-                <div class="rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-2">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-2">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-white/80">Events This Month</p>
@@ -64,7 +64,7 @@
                 </div>
 
                 {{-- Active Societies --}}
-                <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-3">
+                <div class="rounded-2xl bg-gradient-to-r from-[var(--color-navy-900)] to-[var(--color-psits-700)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-3">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-white/80">Active Societies</p>
@@ -106,9 +106,15 @@
                                 {{ $alert['message'] }}
                             </p>
                         </div>
-                        <button class="text-xs font-medium {{ $alert['type'] === 'warning' ? 'text-amber-700 hover:text-amber-900' : ($alert['type'] === 'success' ? 'text-emerald-700 hover:text-emerald-900' : 'text-blue-700 hover:text-blue-900') }} whitespace-nowrap">
+                        @if(isset($alert['modal']))
+                        <button x-data="" x-on:click="$dispatch('open-modal', '{{ $alert['modal'] }}')" class="text-xs font-medium {{ $alert['type'] === 'warning' ? 'text-amber-700 hover:text-amber-900' : ($alert['type'] === 'success' ? 'text-emerald-700 hover:text-emerald-900' : 'text-blue-700 hover:text-blue-900') }} whitespace-nowrap">
                             {{ $alert['action'] }} →
                         </button>
+                        @else
+                        <span class="text-xs font-medium {{ $alert['type'] === 'warning' ? 'text-amber-700' : ($alert['type'] === 'success' ? 'text-emerald-700' : 'text-blue-700') }} whitespace-nowrap">
+                            {{ $alert['action'] }}
+                        </span>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -120,11 +126,11 @@
                 <div class="rounded-2xl bg-white p-6 shadow-[var(--shadow-card-strong)] card-animate">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-[var(--color-ink-900)]">Upcoming Events</h3>
-                        <a href="{{ route('events.index') }}" class="text-sm font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-dark)]">
+                        <a href="{{ route('events.index') }}" class="text-sm font-medium text-[var(--color-psits-700)] hover:text-[var(--color-psits-900)]">
                             View all →
                         </a>
                     </div>
-                    <div class="space-y-3">
+                    <div class="space-y-3 max-h-[288px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
                         @forelse($upcomingEvents as $event)
                         <div class="p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">
                             <div class="flex items-start justify-between gap-3">
@@ -139,7 +145,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <a href="{{ route('events.show', $event) }}" class="text-xs font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] whitespace-nowrap">
+                                <a href="{{ route('events.show', $event) }}" class="text-xs font-medium text-[var(--color-psits-700)] hover:text-[var(--color-psits-900)] whitespace-nowrap">
                                     View
                                 </a>
                             </div>
@@ -202,21 +208,35 @@
                 <h3 class="text-lg font-semibold text-[var(--color-ink-900)] mb-4">Society Activity</h3>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     @foreach($societyStats as $stat)
-                    <div class="p-4 rounded-lg border-2 border-slate-200 hover:border-[var(--color-primary)] transition-colors">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                                {{ substr($stat['society']->abbreviation, 0, 2) }}
+                    @php
+                        $slug = $stat['society']->slug;
+                        $colorMap = [
+                            'psits' => ['from' => 'from-blue-600', 'to' => 'to-blue-700', 'bg' => 'bg-blue-50', 'text' => 'text-blue-700'],
+                            'pice' => ['from' => 'from-amber-500', 'to' => 'to-orange-600', 'bg' => 'bg-amber-50', 'text' => 'text-amber-700'],
+                            'icpep' => ['from' => 'from-red-500', 'to' => 'to-red-600', 'bg' => 'bg-red-50', 'text' => 'text-red-700'],
+                            'jiecep' => ['from' => 'from-emerald-500', 'to' => 'to-teal-600', 'bg' => 'bg-emerald-50', 'text' => 'text-emerald-700'],
+                            'psabe' => ['from' => 'from-green-600', 'to' => 'to-green-700', 'bg' => 'bg-green-50', 'text' => 'text-green-700'],
+                        ];
+                        $colors = $colorMap[$slug] ?? ['from' => 'from-violet-500', 'to' => 'to-purple-600', 'bg' => 'bg-violet-50', 'text' => 'text-violet-700'];
+                    @endphp
+                    <div class="rounded-xl {{ $colors['bg'] }} p-4 shadow-sm hover:shadow-md transition-all">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br {{ $colors['from'] }} {{ $colors['to'] }} flex items-center justify-center text-white shadow-lg">
+                                <img src="{{ asset('images/logo/' . $slug . '.png') }}" alt="{{ $stat['society']->abbreviation }}" class="w-8 h-8 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <span class="hidden text-sm font-bold">{{ substr($stat['society']->abbreviation, 0, 2) }}</span>
                             </div>
-                            <p class="font-semibold text-sm text-[var(--color-ink-900)]">{{ $stat['society']->abbreviation }}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-sm {{ $colors['text'] }} truncate">{{ $stat['society']->abbreviation }}</p>
+                            </div>
                         </div>
-                        <div class="space-y-1">
+                        <div class="space-y-2">
                             <div class="flex items-center justify-between text-xs">
-                                <span class="text-slate-600">Members</span>
-                                <span class="font-medium text-[var(--color-ink-900)]">{{ $stat['members_count'] }}</span>
+                                <span class="text-slate-600 font-medium">Members</span>
+                                <span class="font-bold {{ $colors['text'] }}">{{ $stat['members_count'] }}</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
-                                <span class="text-slate-600">Events (month)</span>
-                                <span class="font-medium text-[var(--color-ink-900)]">{{ $stat['events_this_month'] }}</span>
+                                <span class="text-slate-600 font-medium">Events (month)</span>
+                                <span class="font-bold {{ $colors['text'] }}">{{ $stat['events_this_month'] }}</span>
                             </div>
                         </div>
                     </div>
@@ -250,50 +270,145 @@
                 </div>
             </div>
 
-            {{-- Quick Actions --}}
-            <div class="grid gap-4 md:grid-cols-3">
-                <a href="{{ route('events.create') }}" class="rounded-2xl bg-gradient-to-br from-[var(--color-navy-900)] to-[var(--color-primary)] text-white p-6 shadow-[var(--shadow-card-strong)] card-animate hover:scale-105 transition-transform">
-                    <div class="flex items-center gap-3">
-                        <div class="rounded-lg bg-white/20 p-2">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Create Event</p>
-                            <p class="text-xs text-white/80">Schedule new event</p>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="{{ route('events.index') }}" class="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-1 hover:scale-105 transition-transform">
-                    <div class="flex items-center gap-3">
-                        <div class="rounded-lg bg-white/20 p-2">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Manage Events</p>
-                            <p class="text-xs text-white/80">View all events</p>
-                        </div>
-                    </div>
-                </a>
-
-                <button class="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-6 shadow-[var(--shadow-card-strong)] card-animate delay-2 hover:scale-105 transition-transform text-left">
-                    <div class="flex items-center gap-3">
-                        <div class="rounded-lg bg-white/20 p-2">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">Manage Societies</p>
-                            <p class="text-xs text-white/80">Society administration</p>
-                        </div>
-                    </div>
-                </button>
-            </div>
         </div>
     </div>
+
+    {{-- All Users Modal --}}
+    <x-modal name="all-users-modal" max-width="4xl">
+        <div class="bg-white">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div>
+                    <h3 class="text-lg font-semibold text-[var(--color-ink-900)]">All Users</h3>
+                    <p class="text-sm text-slate-600">{{ $totalUsers }} total users in the system</p>
+                </div>
+                <button class="text-slate-400 hover:text-slate-600" x-on:click="$dispatch('close-modal', 'all-users-modal')">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="max-h-[70vh] overflow-y-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50 sticky top-0">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID Number</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Course</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Society</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-200">
+                        @foreach($allUsers as $user)
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-navy-900)] to-[var(--color-psits-700)] flex items-center justify-center text-white text-sm font-semibold">
+                                            {{ $user->initials() }}
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-[var(--color-ink-900)]">{{ $user->name }}</div>
+                                        <div class="text-sm text-slate-500">{{ $user->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                {{ $user->id_number }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $user->role?->slug === 'admin' ? 'bg-purple-100 text-purple-800' : ($user->role?->slug === 'lsg_officer' ? 'bg-blue-100 text-blue-800' : ($user->role?->slug === 'officer' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
+                                    {{ $user->role?->name ?? 'N/A' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                {{ $user->course }} {{ $user->year_level ? '- Year ' . $user->year_level : '' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                @if($user->societies->isNotEmpty())
+                                    {{ $user->societies->pluck('abbreviation')->join(', ') }}
+                                @else
+                                    <span class="text-slate-400">None</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </x-modal>
+
+    {{-- Inactive Students Modal --}}
+    <x-modal name="inactive-students-modal" max-width="2xl">
+        <div class="bg-white">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                <div>
+                    <h3 class="text-lg font-semibold text-[var(--color-ink-900)]">Inactive Students</h3>
+                    <p class="text-sm text-slate-600">Students with no attendance in the last 30 days</p>
+                </div>
+                <button class="text-slate-400 hover:text-slate-600" x-on:click="$dispatch('close-modal', 'inactive-students-modal')">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="max-h-[70vh] overflow-y-auto">
+                @if($inactiveStudents->isEmpty())
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-slate-600">All students are active!</p>
+                    </div>
+                @else
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID Number</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Course</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Society</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-200">
+                            @foreach($inactiveStudents as $student)
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white text-sm font-semibold">
+                                                {{ $student->initials() }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-[var(--color-ink-900)]">{{ $student->name }}</div>
+                                            <div class="text-sm text-slate-500">{{ $student->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                    {{ $student->id_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                    {{ $student->course }} {{ $student->year_level ? '- Year ' . $student->year_level : '' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    @if($student->societies->isNotEmpty())
+                                        {{ $student->societies->pluck('abbreviation')->join(', ') }}
+                                    @else
+                                        <span class="text-slate-400">None</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+        </div>
+    </x-modal>
 </x-app-layout>

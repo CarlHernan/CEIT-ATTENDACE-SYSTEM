@@ -102,17 +102,18 @@ class AdminDashboardController extends Controller
         }
 
         // Students with no attendance in last 30 days
-        $inactiveStudents = User::whereHas('role', fn($q) => $q->where('slug', 'student'))
+        $inactiveStudentsCount = User::whereHas('role', fn($q) => $q->where('slug', 'student'))
             ->whereDoesntHave('attendanceRecords', function($q) use ($now) {
                 $q->where('time_in', '>', $now->copy()->subDays(30));
             })
             ->count();
 
-        if ($inactiveStudents > 0) {
+        if ($inactiveStudentsCount > 0) {
             $alerts[] = [
                 'type' => 'info',
-                'message' => "{$inactiveStudents} student(s) have not attended any events in the last 30 days",
+                'message' => "{$inactiveStudentsCount} student(s) have not attended any events in the last 30 days",
                 'action' => 'View inactive students',
+                'modal' => 'inactive-students-modal',
             ];
         }
 
@@ -125,6 +126,18 @@ class AdminDashboardController extends Controller
                 'action' => 'View events',
             ];
         }
+
+        // Fetch all users for modal
+        $allUsers = User::with(['role', 'societies'])->orderBy('name')->get();
+
+        // Fetch inactive students for modal
+        $inactiveStudents = User::whereHas('role', fn($q) => $q->where('slug', 'student'))
+            ->with(['societies'])
+            ->whereDoesntHave('attendanceRecords', function($q) use ($now) {
+                $q->where('time_in', '>', $now->copy()->subDays(30));
+            })
+            ->orderBy('name')
+            ->get();
 
         return view('dashboards.admin', compact(
             'totalUsers',
@@ -141,7 +154,9 @@ class AdminDashboardController extends Controller
             'attendanceRate',
             'recentEvents',
             'societyStats',
-            'alerts'
+            'alerts',
+            'allUsers',
+            'inactiveStudents'
         ));
     }
 }
