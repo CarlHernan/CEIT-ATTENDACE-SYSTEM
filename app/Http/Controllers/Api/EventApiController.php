@@ -43,6 +43,7 @@ class EventApiController extends Controller
         $lean = $request->boolean('lean', false);
 
         return response()->json([
+            //'data' => $events->items(),
             'data' => collect($events->items())->map(fn ($event) => $this->transformEvent($event, $lean)),
             'meta' => [
                 'current_page' => $events->currentPage(),

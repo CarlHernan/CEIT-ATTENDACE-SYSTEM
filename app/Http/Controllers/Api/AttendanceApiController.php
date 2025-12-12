@@ -40,9 +40,10 @@ class AttendanceApiController extends Controller
         }
 
         $records = $query->orderByDesc('time_in')->paginate($request->integer('per_page', 20));
+        $lean = $request->boolean('lean', false);
 
         return response()->json([
-            'data' => $records->items(),
+            'data' => collect($records->items())->map(fn ($record) => $this->transformAttendance($record, $lean)),
             'meta' => [
                 'current_page' => $records->currentPage(),
                 'last_page' => $records->lastPage(),
@@ -112,13 +113,7 @@ class AttendanceApiController extends Controller
         return response()->json([
             'data' => [
                 'event_id' => $event->id,
-                'user' => [
-                    'id' => $attendee->id,
-                    'name' => $attendee->name,
-                    'id_number' => $attendee->id_number,
-                    'course' => $attendee->course,
-                    'year_level' => $attendee->year_level,
-                ],
+                'user' => $this->transformUserLean($attendee),
                 'time_in' => optional($record->time_in)->toDateTimeString(),
                 'time_out' => optional($record->time_out)->toDateTimeString(),
                 'already_recorded' => $alreadyRecorded,
@@ -170,7 +165,10 @@ class AttendanceApiController extends Controller
         $societyIds = $user->societies()->pluck('societies.id')->toArray();
 
         if ($role === 'officer') {
-            return in_array($event->society_id, $societyIds, true);
+            return in_array($event->society_id, $societyIds, true)
+                || (bool) $event->is_ceit_wide
+                || ($event->society_id === null && in_array($event->audience, ['ceit_students', 'all_officers'], true))
+                || $event->type === 'ceit';
         }
 
         if ($role === 'lsg_officer') {
@@ -180,5 +178,49 @@ class AttendanceApiController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Transform attendance record; lean=true only returns minimal user info.
+     */
+    protected function transformAttendance(AttendanceRecord $record, bool $lean = false): array
+    {
+        if (! $lean) {
+            $arr = $record->toArray();
+            if ($record->relationLoaded('user') && $record->user) {
+                $arr['user']['computed'] = $this->transformUserLean($record->user);
+            }
+            return $arr;
+        }
+
+        return [
+            'id' => $record->id,
+            'event_id' => $record->event_id,
+            'time_in' => optional($record->time_in)->toDateTimeString(),
+            'time_out' => optional($record->time_out)->toDateTimeString(),
+            'method' => $record->method,
+            'user' => $record->relationLoaded('user') && $record->user
+                ? $this->transformUserLean($record->user)
+                : null,
+        ];
+    }
+
+    /**
+     * Minimal user shape for attendance responses.
+     */
+    protected function transformUserLean(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'id_number' => $user->id_number,
+            'course' => $user->course,
+            'section' => $user->section,
+            'year_level' => $user->year_level,
+            'qr_raw_text' => $user->qr_raw_text,
+            'role_id' => $user->role_id,
+            'is_society_officer' => (bool) $user->is_society_officer,
+            'is_lsg_officer' => (bool) $user->is_lsg_officer,
+        ];
     }
 }
