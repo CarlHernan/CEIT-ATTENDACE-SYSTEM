@@ -49,7 +49,6 @@
                         <div class="flex flex-col gap-3">
                             <i class="ri-qr-scan-2-line text-3xl"></i>
                             <p class="text-sm font-semibold">Attendance Tools</p>
-                            <p class="text-xs text-white/90">No upcoming society events yet. Create one to start tracking attendance.</p>
                         </div>
                     </div>
                 @endif
@@ -164,8 +163,12 @@
                                 </div>
                             </a>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 text-sm text-slate-600 shadow-[var(--shadow-card-strong)]">
-                                No events yet for your society.
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-10 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center text-center">
+                                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-4">
+                                    <i class="ri-calendar-event-line text-3xl text-slate-400"></i>
+                                </div>
+                                <p class="text-lg font-semibold text-slate-700">No society events yet</p>
+                                <p class="text-sm text-slate-500 mt-1">Check back soon for upcoming sessions.</p>
                             </div>
                         @endforelse
                     </div>
@@ -211,8 +214,12 @@
                                 </div>
                             </a>
                         @empty
-                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-5 text-sm text-slate-600 shadow-[var(--shadow-card-strong)]">
-                                No CEIT-wide events yet.
+                            <div class="rounded-2xl bg-white border border-[var(--color-border-soft)] p-10 shadow-[var(--shadow-card-strong)] flex flex-col items-center justify-center text-center">
+                                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-4">
+                                    <i class="ri-calendar-event-line text-3xl text-slate-400"></i>
+                                </div>
+                                <p class="text-lg font-semibold text-slate-700">No CEIT-wide events yet</p>
+                                <p class="text-sm text-slate-500 mt-1">Check back soon for upcoming sessions.</p>
                             </div>
                         @endforelse
                     </div>
