@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\OfficerDashboardController;
 use App\Http\Controllers\LsgDashboardController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\LsgAnalyticsController;
@@ -31,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard/student', StudentDashboardController::class)->name('student.dashboard')->middleware('role:student');
     Route::get('dashboard/officer', OfficerDashboardController::class)->name('officer.dashboard')->middleware('role:officer');
     Route::get('dashboard/lsg', LsgDashboardController::class)->name('lsg.dashboard')->middleware('role:lsg_officer');
-    Route::view('dashboard/admin', 'dashboards.admin')->name('admin.dashboard')->middleware('role:admin');
+    Route::get('dashboard/admin', [AdminDashboardController::class, '__invoke'])->name('admin.dashboard')->middleware('role:admin');
 
     Route::view('profile', 'profile')->name('profile');
 
