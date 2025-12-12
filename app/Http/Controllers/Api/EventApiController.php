@@ -40,9 +40,11 @@ class EventApiController extends Controller
         }
 
         $events = $query->orderBy('start_at', 'desc')->paginate($request->integer('per_page', 15));
+        $lean = $request->boolean('lean', false);
 
         return response()->json([
-            'data' => $events->items(),
+            //'data' => $events->items(),
+            'data' => collect($events->items())->map(fn ($event) => $this->transformEvent($event, $lean)),
             'meta' => [
                 'current_page' => $events->currentPage(),
                 'last_page' => $events->lastPage(),
@@ -62,9 +64,11 @@ class EventApiController extends Controller
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        return response()->json(['data' => $event->load('society')]);
+        $lean = $request->boolean('lean', false);
+        return response()->json(['data' => $this->transformEvent($event->load('society'), $lean)]);
     }
 
+    //return response()->json(['data' => $event->load('society')]);
     protected function applyVisibilityScope($query, ?string $role, array $societyIds)
     {
         return $query->where(function ($q) use ($role, $societyIds) {
@@ -75,8 +79,12 @@ class EventApiController extends Controller
                             ->whereIn('audience', ['ceit_students', 'all_officers']);
                     });
             } elseif ($role === 'lsg_officer') {
-                $q->whereNull('society_id')
-                    ->orWhereHas('creator.role', fn ($role) => $role->where('slug', 'lsg_officer'));
+                $q->where(function ($w) {
+                    $w->whereNull('society_id')
+                        ->orWhere('is_ceit_wide', true)
+                        ->orWhere('type', 'ceit');
+                })
+                ->orWhereHas('creator.role', fn ($role) => $role->where('slug', 'lsg_officer'));
             }
         });
     }
@@ -90,9 +98,38 @@ class EventApiController extends Controller
         }
 
         if ($role === 'lsg_officer') {
-            return $event->society_id === null || ($event->creator?->role?->slug === 'lsg_officer');
+            return $event->society_id === null
+                || $event->is_ceit_wide
+                || $event->type === 'ceit'
+                || ($event->creator?->role?->slug === 'lsg_officer');
         }
 
         return false;
+    }
+
+    /**
+     * Transform the event payload; lean=true returns only a minimal set of fields.
+     */
+    protected function transformEvent(Event $event, bool $lean = false): array
+    {
+        if ($lean) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'start_at' => $event->start_at,
+                'end_at' => $event->end_at,
+                'status' => $event->status,
+                'runtime_status' => $event->runtime_status,
+                'computed_status' => $event->computed_status,
+                'location' => $event->location,
+                'society' => $event->society ? [
+                    'abbreviation' => $event->society->abbreviation,
+                ] : null,
+            ];
+        }
+
+        $arr = $event->toArray();
+        $arr['computed_status'] = $event->computed_status;
+        return $arr;
     }
 }

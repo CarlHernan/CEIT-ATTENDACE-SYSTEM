@@ -40,6 +40,10 @@ class Event extends Model
         'is_ceit_wide' => 'boolean',
     ];
 
+    protected $appends = [
+        'runtime_status',
+    ];
+
     public function society(): BelongsTo
     {
         return $this->belongsTo(Society::class);
@@ -53,6 +57,32 @@ class Event extends Model
     public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
+    }
+
+    /**
+    * Derived status based on time; leaves stored status untouched.
+    * Returns: cancelled | finished | upcoming | ongoing
+    */
+    public function getRuntimeStatusAttribute(): string
+    {
+        if ($this->status === 'cancelled') {
+            return 'cancelled';
+        }
+
+        $now = now();
+
+        // Finished if end_at has passed, or no end_at but start_at is past
+        if (($this->end_at && $this->end_at->isPast())
+            || (!$this->end_at && $this->start_at?->isPast())) {
+            return 'finished';
+        }
+
+        // Upcoming if start is in the future
+        if ($this->start_at && $this->start_at->isFuture()) {
+            return 'upcoming';
+        }
+
+        return 'ongoing';
     }
 
     public function scopeVisibleToStudent(Builder $query, User $user): Builder

@@ -35,7 +35,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div id="student-fields" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2">
+                        <div id="student-fields" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2">
                             <div>
                                 <label class="text-xs font-semibold text-blue-900">Student ID</label>
                                 <input id="student_id" type="text" name="student_id" class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-700 focus:ring-blue-700 text-sm" placeholder="e.g., 2021-12345">
@@ -101,32 +101,33 @@
             let selectionChanged = false;
             let history = [];
 
-            // Prefill event from query (selected in blade) - just ensure select visible on load.
-            modeSelect.addEventListener('change', () => {
-                if (modeSelect.value === 'event') {
-                    eventSelect.classList.remove('hidden');
-                    studentFields.classList.add('hidden');
-                    document.querySelectorAll('.student-only').forEach(btn => btn.classList.add('hidden'));
-                } else if (modeSelect.value === 'student') {
-                    eventSelect.classList.add('hidden');
-                    studentFields.classList.remove('hidden');
-                    document.querySelectorAll('.student-only').forEach(btn => btn.classList.remove('hidden'));
-                    if (studentIdEl) studentIdEl.setAttribute('required', 'required');
-                } else {
-                    // freeform
-                    eventSelect.classList.add('hidden');
-                    studentFields.classList.add('hidden');
-                    document.querySelectorAll('.student-only').forEach(btn => btn.classList.add('hidden'));
-                    if (studentIdEl) studentIdEl.removeAttribute('required');
+            const toggleModeUI = () => {
+                const isEvent = modeSelect.value === 'event';
+                const isStudent = modeSelect.value === 'student';
+
+                eventSelect.classList.toggle('hidden', !isEvent);
+                studentFields.classList.toggle('hidden', !isStudent);
+
+                document.querySelectorAll('.student-only').forEach(btn => {
+                    btn.classList.toggle('hidden', !isStudent);
+                });
+
+                if (studentIdEl) {
+                    if (isStudent) {
+                        studentIdEl.setAttribute('required', 'required');
+                    } else {
+                        studentIdEl.removeAttribute('required');
+                    }
                 }
-                // Reset chat when mode changes
+
                 renderMessages([]);
                 selectionChanged = true;
                 statusEl.textContent = 'Mode changed; chat reset.';
-            });
+            };
 
+            modeSelect.addEventListener('change', toggleModeUI);
             // Trigger once to ensure correct visibility on load.
-            modeSelect.dispatchEvent(new Event('change'));
+            toggleModeUI();
 
             function renderMessages(newHistory) {
                 history = newHistory || [];
