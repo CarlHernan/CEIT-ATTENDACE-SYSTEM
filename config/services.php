@@ -42,4 +42,9 @@ return [
         'timeout' => env('OLLAMA_CLOUD_TIMEOUT', 25),
     ],
 
+    'n8n' => [
+        'webhook_url' => env('N8N_WEBHOOK_URL'),
+        'webhook_token' => env('N8N_WEBHOOK_TOKEN'),
+    ],
+
 ];

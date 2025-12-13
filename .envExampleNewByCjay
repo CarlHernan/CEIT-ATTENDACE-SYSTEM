@@ -71,3 +71,7 @@ OLLAMA_CLOUD_MODEL=gpt-oss:120b-cloud
 OLLAMA_CLOUD_TIMEOUT=25
 
 APP_TIMEZONE=Asia/Manila
+
+# n8n webhook (Authorization: Bearer <token>)
+N8N_WEBHOOK_URL=
+N8N_WEBHOOK_TOKEN=

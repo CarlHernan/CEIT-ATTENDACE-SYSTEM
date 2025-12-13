@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\EventReminderLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,6 +58,11 @@ class Event extends Model
     public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
+    }
+
+    public function eventReminderLogs(): HasMany
+    {
+        return $this->hasMany(EventReminderLog::class);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Society;
+use App\Jobs\SendEventEmailJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -107,7 +108,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'start_at' => ['required', 'date'],
+            'start_at' => ['required', 'date', 'after:now'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],
@@ -129,6 +130,8 @@ class EventController extends Controller
         ];
 
         $event = Event::create($payload);
+
+        SendEventEmailJob::dispatch($event->id, 'created');
 
         return redirect()->route('events.show', $event)->with('status', 'Event created.');
     }
@@ -178,7 +181,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'start_at' => ['required', 'date'],
+            'start_at' => ['required', 'date', 'after:now'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
             'location' => ['nullable', 'string', 'max:255'],
             'attendance_mode' => ['required', 'in:qr,manual,hybrid'],

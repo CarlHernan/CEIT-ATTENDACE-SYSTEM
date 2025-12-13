@@ -112,12 +112,16 @@ class EventApiController extends Controller
      */
     protected function transformEvent(Event $event, bool $lean = false): array
     {
+        $timezone = config('app.timezone');
+        $startAt = $event->start_at?->timezone($timezone)->format('Y-m-d H:i:s');
+        $endAt = $event->end_at?->timezone($timezone)->format('Y-m-d H:i:s');
+
         if ($lean) {
             return [
                 'id' => $event->id,
                 'title' => $event->title,
-                'start_at' => $event->start_at,
-                'end_at' => $event->end_at,
+                'start_at' => $startAt,
+                'end_at' => $endAt,
                 'status' => $event->status,
                 'runtime_status' => $event->runtime_status,
                 'computed_status' => $event->computed_status,
@@ -129,6 +133,8 @@ class EventApiController extends Controller
         }
 
         $arr = $event->toArray();
+        $arr['start_at'] = $startAt;
+        $arr['end_at'] = $endAt;
         $arr['computed_status'] = $event->computed_status;
         return $arr;
     }
