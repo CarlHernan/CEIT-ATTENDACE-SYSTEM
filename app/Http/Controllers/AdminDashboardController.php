@@ -15,9 +15,10 @@ class AdminDashboardController extends Controller
     public function __invoke(Request $request)
     {
         $now = Carbon::now();
+        $managementRoles = ['admin', 'lsg_officer'];
 
         // Overall Statistics
-        $totalUsers = User::count();
+        $totalUsers = User::whereHas('role', fn($q) => $q->whereNotIn('slug', $managementRoles))->count();
         $totalStudents = User::whereHas('role', fn($q) => $q->where('slug', 'student'))->count();
         $totalOfficers = User::where(fn($q) => $q->where('is_society_officer', true)->orWhere('is_lsg_officer', true))->count();
         $totalSocieties = Society::count();
@@ -128,7 +129,10 @@ class AdminDashboardController extends Controller
         }
 
         // Fetch all users for modal
-        $allUsers = User::with(['role', 'societies'])->orderBy('name')->get();
+        $allUsers = User::with(['role', 'societies'])
+            ->whereHas('role', fn ($q) => $q->whereNotIn('slug', $managementRoles))
+            ->orderBy('name')
+            ->get();
 
         // Fetch inactive students for modal
         $inactiveStudents = User::whereHas('role', fn($q) => $q->where('slug', 'student'))
@@ -160,4 +164,3 @@ class AdminDashboardController extends Controller
         ));
     }
 }
-

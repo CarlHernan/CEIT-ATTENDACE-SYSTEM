@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\Society;
 use App\Models\User;
+use Database\Seeders\AdditionalUsersAndEventsSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -127,8 +128,17 @@ class DatabaseSeeder extends Seeder
                     'password' => Hash::make('password'),
                 ]
             );
+            // Ensure existing seeded officer accounts also have the flag enabled.
+            if (! $user->is_society_officer) {
+                $user->forceFill(['is_society_officer' => true])->save();
+            }
             $user->societies()->syncWithoutDetaching([$data['society']->id => ['position' => 'Officer']]);
         }
+
+        // Safety: ensure all society-officer role accounts are flagged as society officers.
+        User::whereHas('role', fn ($q) => $q->where('slug', 'officer'))
+            ->where('is_society_officer', false)
+            ->update(['is_society_officer' => true]);
 
         // Example student factory user
         User::factory()->create([
@@ -177,5 +187,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(EventSeeder::class);
+        $this->call(AdditionalUsersAndEventsSeeder::class);
     }
 }
